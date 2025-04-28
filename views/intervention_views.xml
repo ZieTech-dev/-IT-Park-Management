@@ -1,0 +1,369 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Vue formulaire pour les interventions -->
+        <record id="view_it_intervention_form" model="ir.ui.view">
+            <field name="name">it.intervention.form</field>
+            <field name="model">it.intervention</field>
+            <field name="arch" type="xml">
+                <form string="Intervention">
+                    <header>
+                        <button name="action_set_assigned" type="object" string="Assigner" 
+                            invisible_if="state not in ['draft']" 
+                            class="oe_highlight"/>
+                        <button name="action_set_in_progress" type="object" string="Démarrer" 
+                            invisible_if="state not in ['assigned']" 
+                            class="oe_highlight"/>
+                        <button name="action_set_resolved" type="object" string="Résoudre" 
+                            invisible_if="state not in ['in_progress']" 
+                            class="oe_highlight"/>
+                        <button name="action_set_closed" type="object" string="Clôturer" 
+                            invisible_if="state not in ['resolved']" 
+                            class="oe_highlight"/>
+                        <button name="action_set_cancelled" type="object" string="Annuler" 
+                            invisible_if="state in ['closed', 'cancelled']" 
+                            groups="it_park_management.group_it_park_manager"/>
+                        <button name="create_helpdesk_ticket" type="object" string="Créer ticket Helpdesk" 
+                            invisible_if="helpdesk_ticket_id or state in ['closed', 'cancelled']" 
+                            class="btn-secondary"/>
+
+                        <field name="state" widget="statusbar" 
+                            statusbar_visible="draft,assigned,in_progress,resolved,closed"
+                            invisible_if="state in ['draft', 'assigned']"/>
+
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                                <field name="name" placeholder="Titre de l'intervention"/>
+                            </h1>
+                            <label for="reference" class="oe_edit_only"/>
+                            <h2>
+                                <field name="reference" readonly="1"/>
+                            </h2>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="client_id" required="1"/>
+                                <field name="equipment_id" domain="[('client_id', '=', client_id)]"/>
+                                <field name="software_id" domain="[('client_id', '=', client_id)]"/>
+                                <field name="helpdesk_ticket_id" readonly="1" invisible_if="helpdesk_ticket_id == False"/>
+
+                            </group>
+                            <group>
+                                <field name="type_id" required="1"/>
+                                <field name="priority_id" required="1"/>
+                                <field name="user_id"/>
+                                <field name="team_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Détails" name="details">
+                                <group>
+                                    <group string="Dates">
+                                        <field name="date_start"/>
+                                        <field name="date_end"/>
+                                        <field name="planned_duration" widget="float_time"/>
+                                        <field name="actual_duration" widget="float_time"/>
+                                    </group>
+                                    <group string="SLA">
+                                        <field name="sla_deadline"/>
+                                        <field name="sla_status"/>
+                                    </group>
+                                </group>
+                                <group string="Description">
+                                    <field name="description" nolabel="1" placeholder="Description détaillée du problème..."/>
+                                </group>
+                            </page>
+                            <page string="Analyse et solution" name="solution" invisible_if="state in ['draft', 'assigned']">
+
+                                <group>
+                                    <field name="cause" placeholder="Cause identifiée du problème..."/>
+                                </group>
+                                <group string="Solution">
+                                    <field name="solution" nolabel="1" placeholder="Solution appliquée..."/>
+                                </group>
+                            </page>
+                            <page string="Notes internes" name="notes">
+                                <field name="internal_notes"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vue arbre (liste) pour les interventions -->
+        <record id="view_it_intervention_tree" model="ir.ui.view">
+            <field name="name">it.intervention.tree</field>
+            <field name="model">it.intervention</field>
+            <field name="arch" type="xml">
+                <list string="Interventions" decoration-danger="sla_status=='overdue'" decoration-warning="sla_status=='at_risk'">
+                    <field name="reference"/>
+                    <field name="name"/>
+                    <field name="client_id"/>
+                    <field name="type_id"/>
+                    <field name="priority_id"/>
+                    <field name="date_start"/>
+                    <field name="equipment_id"/>
+                    <field name="software_id"/>
+                    <field name="user_id"/>
+                    <field name="sla_deadline"/>
+                    <field name="sla_status" invisible="1"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vue kanban pour les interventions -->
+        <record id="view_it_intervention_kanban" model="ir.ui.view">
+            <field name="name">it.intervention.kanban</field>
+            <field name="model">it.intervention</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state" class="o_kanban_small_column">
+                    <field name="reference"/>
+                    <field name="name"/>
+                    <field name="client_id"/>
+                    <field name="type_id"/>
+                    <field name="priority_id"/>
+                    <field name="equipment_id"/>
+                    <field name="date_start"/>
+                    <field name="user_id"/>
+                    <field name="sla_deadline"/>
+                    <field name="sla_status"/>
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click
+                                              #{record.sla_status.raw_value == 'overdue' ? 'oe_kanban_card_danger' : ''}
+                                              #{record.sla_status.raw_value == 'at_risk' ? 'oe_kanban_card_warning' : ''}">
+                                <div class="oe_kanban_content">
+                                    <div>
+                                        <strong><field name="name"/></strong>
+                                    </div>
+                                    <div>
+                                        <field name="reference"/> - <field name="type_id"/>
+                                    </div>
+                                    <div>
+                                        <field name="client_id"/>
+                                    </div>
+                                    <div t-if="record.equipment_id.raw_value">
+                                        <field name="equipment_id"/>
+                                    </div>
+                                    <div t-if="record.software_id.raw_value">
+                                        <field name="software_id"/>
+                                    </div>
+                                    <div>
+                                        <span t-if="record.user_id.raw_value">
+                                            <field name="user_id"/>
+                                        </span>
+                                        <span t-else="" class="text-muted">
+                                            Non assigné
+                                        </span>
+                                    </div>
+                                    <div t-if="record.sla_deadline.raw_value">
+                                        <span t-if="record.sla_status.raw_value == 'overdue'" class="text-danger">
+                                            SLA en retard
+                                        </span>
+                                        <span t-elif="record.sla_status.raw_value == 'at_risk'" class="text-warning">
+                                            SLA en risque
+                                        </span>
+                                        <span t-else="">
+                                            Échéance: <field name="sla_deadline"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Vue calendrier pour les interventions -->
+        <!-- <record id="view_it_intervention_calendar" model="ir.ui.view">
+            <field name="name">it.intervention.calendar</field>
+            <field name="model">it.intervention</field>
+            <field name="arch" type="xml">
+                <calendar string="Calendrier des interventions" 
+                        date_start="date_start" 
+                        date_end="date_end" 
+                        color="user_id"
+                        mode="month"
+                        event_open_popup="true"
+                        quick_add="false">
+                    <field name="name"/>
+                    <field name="client_id"/>
+                    <field name="type_id"/>
+                    <field name="state"/>
+                </calendar>
+            </field>
+        </record> -->
+
+        <!-- Vue de recherche pour les interventions -->
+        <record id="view_it_intervention_search" model="ir.ui.view">
+            <field name="name">it.intervention.search</field>
+            <field name="model">it.intervention</field>
+            <field name="arch" type="xml">
+                <search string="Interventions">
+                    <field name="name"/>
+                    <field name="reference"/>
+                    <field name="client_id"/>
+                    <field name="equipment_id"/>
+                    <field name="software_id"/>
+                    <field name="user_id"/>
+                    <separator/>
+                    <filter string="Mes interventions" name="my_interventions" domain="[('user_id', '=', uid)]"/>
+                    <separator/>
+                    <filter string="À traiter" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Assignées" name="assigned" domain="[('state', '=', 'assigned')]"/>
+                    <filter string="En cours" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
+                    <filter string="Résolues" name="resolved" domain="[('state', '=', 'resolved')]"/>
+                    <filter string="Clôturées" name="closed" domain="[('state', '=', 'closed')]"/>
+                    <separator/>
+                    <filter string="SLA dans les délais" name="on_track" domain="[('sla_status', '=', 'on_track')]"/>
+                    <filter string="SLA en risque" name="at_risk" domain="[('sla_status', '=', 'at_risk')]"/>
+                    <filter string="SLA en retard" name="overdue" domain="[('sla_status', '=', 'overdue')]"/>
+                    <separator/>
+                    <filter string="À faire aujourd'hui" name="today" 
+                            domain="[('date_start', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59')), 
+                                    ('date_start', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
+                    <filter string="Cette semaine" name="this_week" 
+                            domain="[('date_start', '&gt;=', (context_today() + relativedelta(weeks=-1,days=1,weekday=0)).strftime('%Y-%m-%d')),
+                                    ('date_start', '&lt;=', (context_today() + relativedelta(weekday=6)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Regrouper par">
+                        <filter string="Client" name="group_by_client" domain="[]" context="{'group_by': 'client_id'}"/>
+                        <filter string="Type" name="group_by_type" domain="[]" context="{'group_by': 'type_id'}"/>
+                        <filter string="Priorité" name="group_by_priority" domain="[]" context="{'group_by': 'priority_id'}"/>
+                        <filter string="État" name="group_by_state" domain="[]" context="{'group_by': 'state'}"/>
+                        <filter string="Assigné à" name="group_by_user" domain="[]" context="{'group_by': 'user_id'}"/>
+                        <filter string="Équipe" name="group_by_team" domain="[]" context="{'group_by': 'team_id'}"/>
+                        <filter string="Date" name="group_by_date" domain="[]" context="{'group_by': 'date_start:day'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Vues pour les types d'interventions -->
+        <record id="view_it_intervention_type_form" model="ir.ui.view">
+            <field name="name">it.intervention.type.form</field>
+            <field name="model">it.intervention.type</field>
+            <field name="arch" type="xml">
+                <form string="Type d'intervention">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_interventions" type="object" class="oe_stat_button" icon="fa-wrench">
+                                <field name="intervention_count" widget="statinfo" string="Interventions"/>
+                            </button>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="color" widget="color"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description" name="description">
+                                <field name="description"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_it_intervention_type_tree" model="ir.ui.view">
+            <field name="name">it.intervention.type.tree</field>
+            <field name="model">it.intervention.type</field>
+            <field name="arch" type="xml">
+                <list string="Types d'interventions">
+                    <field name="name"/>
+                    <field name="intervention_count"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vues pour les priorités d'interventions -->
+        <record id="view_it_intervention_priority_form" model="ir.ui.view">
+            <field name="name">it.intervention.priority.form</field>
+            <field name="model">it.intervention.priority</field>
+            <field name="arch" type="xml">
+                <form string="Priorité d'intervention">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_interventions" type="object" class="oe_stat_button" icon="fa-wrench">
+                                <field name="intervention_count" widget="statinfo" string="Interventions"/>
+                            </button>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="sequence"/>
+                                <field name="color" widget="color"/>
+                            </group>
+                            <group>
+                                <field name="response_time_hours"/>
+                                <field name="resolution_time_hours"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_it_intervention_priority_tree" model="ir.ui.view">
+            <field name="name">it.intervention.priority.tree</field>
+            <field name="model">it.intervention.priority</field>
+            <field name="arch" type="xml">
+                <list string="Priorités d'interventions">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="response_time_hours"/>
+                    <field name="resolution_time_hours"/>
+                    <field name="intervention_count"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Actions -->
+        <record id="action_it_intervention" model="ir.actions.act_window">
+            <field name="name">Interventions</field>
+            <field name="res_model">it.intervention</field>
+            <field name="view_mode">list,kanban,calendar,form</field>
+            <field name="context">{'search_default_draft': 1, 'search_default_assigned': 1, 'search_default_in_progress': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer une nouvelle intervention
+                </p>
+            </field>
+        </record>
+
+        <record id="action_it_intervention_type" model="ir.actions.act_window">
+            <field name="name">Types d'interventions</field>
+            <field name="res_model">it.intervention.type</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer un nouveau type d'intervention
+                </p>
+            </field>
+        </record>
+
+        <record id="action_it_intervention_priority" model="ir.actions.act_window">
+            <field name="name">Priorités d'interventions</field>
+            <field name="res_model">it.intervention.priority</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer une nouvelle priorité d'intervention
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

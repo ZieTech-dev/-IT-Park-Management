@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Vue formulaire pour les clients -->
+        <record id="view_it_client_form" model="ir.ui.view">
+            <field name="name">it.client.form</field>
+            <field name="model">it.client</field>
+            <field name="arch" type="xml">
+                <form string="Client">
+                    <header>
+                        <button name="action_view_equipment" type="object" class="oe_stat_button" string="Équipements"/>
+                        <button name="action_view_software" type="object" class="oe_stat_button" string="Logiciels"/>
+                        <button name="action_view_contracts" type="object" class="oe_stat_button" string="Contrats"/>
+                        <button name="action_view_interventions" type="object" class="oe_stat_button" string="Interventions"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_equipment" type="object" class="oe_stat_button" icon="fa-laptop">
+                                <field name="equipment_count" widget="statinfo" string="Équipements"/>
+                            </button>
+                            <button name="action_view_software" type="object" class="oe_stat_button" icon="fa-file-code-o">
+                                <field name="software_count" widget="statinfo" string="Logiciels"/>
+                            </button>
+                            <button name="action_view_contracts" type="object" class="oe_stat_button" icon="fa-file-text-o">
+                                <field name="contract_count" widget="statinfo" string="Contrats"/>
+                            </button>
+                            <button name="action_view_interventions" type="object" class="oe_stat_button" icon="fa-wrench">
+                                <field name="intervention_count" widget="statinfo" string="Interventions"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                                <field name="name" placeholder="Nom du client"/>
+                            </h1>
+                            <label for="reference" class="oe_edit_only"/>
+                            <h2>
+                                <field name="reference" readonly="1"/>
+                            </h2>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="partner_id" domain="[('is_company', '=', True)]"/>
+                                <field name="active" widget="boolean_toggle"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                            <group>
+                                <field name="street"/>
+                                <field name="street2"/>
+                                <field name="zip"/>
+                                <field name="city"/>
+                                <field name="state_id"/>
+                                <field name="country_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Contacts" name="contacts">
+                                <field name="contact_ids">
+                                    <list string="Contacts" editable="bottom">
+                                        <field name="partner_id" domain="[('is_company', '=', False)]"/>
+                                        <field name="function"/>
+                                        <field name="email"/>
+                                        <field name="phone"/>
+                                        <field name="mobile"/>
+                                        <field name="is_primary"/>
+                                        <field name="is_technical"/>
+                                        <field name="is_billing"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Sites" name="sites">
+                                <field name="site_ids">
+                                    <list string="Sites" editable="bottom">
+                                        <field name="name"/>
+                                        <field name="address"/>
+                                        <field name="zip"/>
+                                        <field name="city"/>
+                                        <field name="contact_id"/>
+                                        <field name="equipment_count"/>
+                                        <field name="active"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Équipements" name="equipment">
+                                <field name="equipment_ids">
+                                    <list string="Équipements">
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="type_id"/>
+                                        <field name="model"/>
+                                        <field name="serial_number"/>
+                                        <field name="site_id"/>
+                                        <field name="state"/>
+                                        <field name="warranty_end"/>
+                                        <field name="warranty_status"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Logiciels" name="software">
+                                <field name="software_ids">
+                                    <list string="Logiciels">
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="version"/>
+                                        <field name="editor_id"/>
+                                        <field name="license_type"/>
+                                        <field name="expiration_date"/>
+                                        <field name="license_status"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Contrats" name="contracts">
+                                <field name="contract_ids">
+                                    <list string="Contrats">
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="type_id"/>
+                                        <field name="date_start"/>
+                                        <field name="date_end"/>
+                                        <field name="invoicing_frequency"/>
+                                        <field name="price" widget="monetary"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Interventions" name="interventions">
+                                <field name="intervention_ids">
+                                    <list string="Interventions">
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="type_id"/>
+                                        <field name="date_start"/>
+                                        <field name="equipment_id"/>
+                                        <field name="software_id"/>
+                                        <field name="user_id"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vue arbre (liste) pour les clients -->
+        <record id="view_it_client_tree" model="ir.ui.view">
+            <field name="name">it.client.tree</field>
+            <field name="model">it.client</field>
+            <field name="arch" type="xml">
+                <list string="Clients">
+                    <field name="reference"/>
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="city"/>
+                    <field name="equipment_count"/>
+                    <field name="software_count"/>
+                    <field name="contract_count"/>
+                    <field name="active_contract_count"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vue de recherche pour les clients -->
+        <record id="view_it_client_search" model="ir.ui.view">
+            <field name="name">it.client.search</field>
+            <field name="model">it.client</field>
+            <field name="arch" type="xml">
+                <search string="Clients">
+                    <field name="name"/>
+                    <field name="reference"/>
+                    <field name="partner_id"/>
+                    <field name="city"/>
+                    <filter string="Clients actifs" name="active" domain="[('active', '=', True)]"/>
+                    <filter string="Clients inactifs" name="inactive" domain="[('active', '=', False)]"/>
+                    <group expand="0" string="Regrouper par">
+                        <filter string="Ville" name="group_by_city" domain="[]" context="{'group_by': 'city'}"/>
+                        <filter string="Pays" name="group_by_country" domain="[]" context="{'group_by': 'country_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Vue pour les contacts des clients -->
+        <record id="view_it_client_contact_form" model="ir.ui.view">
+            <field name="name">it.client.contact.form</field>
+            <field name="model">it.client.contact</field>
+            <field name="arch" type="xml">
+                <form string="Contact client">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="client_id"/>
+                                <field name="partner_id" domain="[('is_company', '=', False)]"/>
+                                <field name="function"/>
+                            </group>
+                            <group>
+                                <field name="is_primary"/>
+                                <field name="is_technical"/>
+                                <field name="is_billing"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Coordonnées">
+                                <field name="email"/>
+                                <field name="phone"/>
+                                <field name="mobile"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vue pour les sites des clients -->
+        <record id="view_it_client_site_form" model="ir.ui.view">
+            <field name="name">it.client.site.form</field>
+            <field name="model">it.client.site</field>
+            <field name="arch" type="xml">
+                <form string="Site client">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_equipment" type="object" class="oe_stat_button" icon="fa-laptop">
+                                <field name="equipment_count" widget="statinfo" string="Équipements"/>
+                            </button>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="client_id"/>
+                                <field name="name"/>
+                                <field name="contact_id" domain="[('client_id', '=', client_id)]"/>
+                            </group>
+                            <group>
+                                <field name="address"/>
+                                <field name="zip"/>
+                                <field name="city"/>
+                                <field name="state_id"/>
+                                <field name="country_id"/>
+                                <field name="active" widget="boolean_toggle"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Notes" name="notes">
+                                <field name="notes"/>
+                            </page>
+                            <page string="Équipements" name="equipment">
+                                <field name="equipment_ids">
+                                    <list string="Équipements">
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="type_id"/>
+                                        <field name="model"/>
+                                        <field name="serial_number"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Action pour les clients -->
+        <record id="action_it_client" model="ir.actions.act_window">
+            <field name="name">Clients</field>
+            <field name="res_model">it.client</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer un nouveau client
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

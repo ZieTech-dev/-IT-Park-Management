@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Catégorie de groupes de sécurité -->
+        <record id="module_category_it_park" model="ir.module.category">
+            <field name="name">Gestion de parc IT</field>
+            <field name="description">Gère les accès au module de gestion de parc informatique</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- Groupes de sécurité -->
+        <record id="group_it_park_user" model="res.groups">
+            <field name="name">Utilisateur</field>
+            <field name="category_id" ref="module_category_it_park"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Les utilisateurs peuvent voir les données mais ne peuvent pas les modifier.</field>
+        </record>
+
+        <record id="group_it_park_technician" model="res.groups">
+            <field name="name">Technicien</field>
+            <field name="category_id" ref="module_category_it_park"/>
+            <field name="implied_ids" eval="[(4, ref('group_it_park_user'))]"/>
+            <field name="comment">Les techniciens peuvent gérer les équipements, les logiciels et les interventions.</field>
+        </record>
+
+        <record id="group_it_park_manager" model="res.groups">
+            <field name="name">Responsable</field>
+            <field name="category_id" ref="module_category_it_park"/>
+            <field name="implied_ids" eval="[(4, ref('group_it_park_technician'))]"/>
+            <field name="comment">Les responsables ont un accès complet aux fonctionnalités.</field>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Règles de sécurité pour l'accès multi-entreprise -->
+        <record id="ir_rule_it_client_company" model="ir.rule">
+            <field name="name">Client IT: multi-company</field>
+            <field name="model_id" ref="model_it_client"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="ir_rule_it_equipment_company" model="ir.rule">
+            <field name="name">Équipement IT: multi-company</field>
+            <field name="model_id" ref="model_it_equipment"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="ir_rule_it_software_company" model="ir.rule">
+            <field name="name">Logiciel IT: multi-company</field>
+            <field name="model_id" ref="model_it_software"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="ir_rule_it_contract_company" model="ir.rule">
+            <field name="name">Contrat IT: multi-company</field>
+            <field name="model_id" ref="model_it_contract"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="ir_rule_it_intervention_company" model="ir.rule">
+            <field name="name">Intervention IT: multi-company</field>
+            <field name="model_id" ref="model_it_intervention"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="ir_rule_it_alert_company" model="ir.rule">
+            <field name="name">Alerte IT: multi-company</field>
+            <field name="model_id" ref="model_it_alert"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+    </data>
+</odoo>

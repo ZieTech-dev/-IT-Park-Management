@@ -1,0 +1,387 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Vue formulaire pour les équipements -->
+        <record id="view_it_equipment_form" model="ir.ui.view">
+            <field name="name">it.equipment.form</field>
+            <field name="model">it.equipment</field>
+            <field name="arch" type="xml">
+                <form string="Équipement">
+                    <header>
+                        <button name="action_set_in_use" type="object" string="Mettre en utilisation" 
+                                invisible_if="state not in ['draft', 'in_stock', 'in_repair']" 
+                                class="oe_highlight"/>
+                        <button name="action_set_in_repair" type="object" string="Mettre en réparation" 
+                                invisible_if="state not in ['in_use']" 
+                                class="oe_highlight"/>
+                        <button name="action_set_end_of_life" type="object" string="Mettre en fin de vie" 
+                                invisible_if="state in ['end_of_life', 'decommissioned']" 
+                                class="oe_highlight"/>
+                        <field name="state" widget="statusbar" 
+                               statusbar_visible="draft,in_stock,in_use,in_repair,end_of_life"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_interventions" type="object" class="oe_stat_button" icon="fa-wrench">
+                                <field name="intervention_count" widget="statinfo" string="Interventions"/>
+                            </button>
+                            <button name="action_view_software" type="object" class="oe_stat_button" icon="fa-file-code-o">
+                                <field name="software_count" widget="statinfo" string="Logiciels"/>
+                            </button>
+                            <button name="action_view_contracts" type="object" class="oe_stat_button" icon="fa-file-text-o">
+                                <field name="contract_count" widget="statinfo" string="Contrats"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                                <field name="name" placeholder="Nom de l'équipement"/>
+                            </h1>
+                            <label for="reference" class="oe_edit_only"/>
+                            <h2>
+                                <field name="reference" readonly="1"/>
+                            </h2>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="client_id" required="1"/>
+                                <field name="site_id" domain="[('client_id', '=', client_id)]"/>
+                                <field name="user_id" domain="[('parent_id', '=', client_id.partner_id.id)]"/>
+                                <field name="active" widget="boolean_toggle"/>
+                            </group>
+                            <group>
+                                <field name="type_id"/>
+                                <field name="brand_id"/>
+                                <field name="model"/>
+                                <field name="serial_number"/>
+                                <field name="product_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Cycle de vie" name="lifecycle">
+                                <group>
+                                    <group>
+                                        <field name="purchase_date"/>
+                                        <field name="installation_date"/>
+                                        <field name="warranty_end"/>
+                                        <field name="replacement_date"/>
+                                        <field name="end_of_life"/>
+                                    </group>
+                                    <group>
+                                        <field name="purchase_cost" widget="monetary"/>
+                                        <field name="monthly_cost" widget="monetary"/>
+                                        <field name="currency_id" invisible="1"/>
+                                        <field name="days_to_warranty_end"/>
+                                        <field name="warranty_status"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Informations techniques" name="technical">
+                                <group>
+                                    <field name="technical_specs"/>
+                                </group>
+                                <group>
+                                    <group>
+                                        <field name="ip_address"/>
+                                        <field name="mac_address"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Logiciels installés" name="software">
+                                <field name="software_ids">
+                                    <list>
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="version"/>
+                                        <field name="editor_id"/>
+                                        <field name="expiration_date"/>
+                                        <field name="license_status"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Contrats associés" name="contracts">
+                                <field name="contract_ids">
+                                    <list>
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="type_id"/>
+                                        <field name="date_start"/>
+                                        <field name="date_end"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Interventions" name="interventions">
+                                <field name="intervention_ids">
+                                    <list>
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="type_id"/>
+                                        <field name="date_start"/>
+                                        <field name="user_id"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Notes" name="notes">
+                                <field name="notes"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vue arbre (liste) pour les équipements -->
+        <record id="view_it_equipment_tree" model="ir.ui.view">
+            <field name="name">it.equipment.tree</field>
+            <field name="model">it.equipment</field>
+            <field name="arch" type="xml">
+                <list string="Équipements" decoration-danger="warranty_status=='expired'" decoration-warning="warranty_status=='expires_soon'">
+                    <field name="reference"/>
+                    <field name="name"/>
+                    <field name="client_id"/>
+                    <field name="site_id"/>
+                    <field name="type_id"/>
+                    <field name="brand_id"/>
+                    <field name="model"/>
+                    <field name="serial_number"/>
+                    <field name="warranty_end"/>
+                    <field name="warranty_status" invisible="1"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vue kanban pour les équipements -->
+        <record id="view_it_equipment_kanban" model="ir.ui.view">
+            <field name="name">it.equipment.kanban</field>
+            <field name="model">it.equipment</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state" class="o_kanban_small_column">
+                    <field name="reference"/>
+                    <field name="name"/>
+                    <field name="client_id"/>
+                    <field name="type_id"/>
+                    <field name="brand_id"/>
+                    <field name="model"/>
+                    <field name="warranty_end"/>
+                    <field name="warranty_status"/>
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click
+                                              #{record.warranty_status.raw_value == 'expired' ? 'oe_kanban_card_danger' : ''}
+                                              #{record.warranty_status.raw_value == 'expires_soon' ? 'oe_kanban_card_warning' : ''}">
+                                <div class="oe_kanban_content">
+                                    <div>
+                                        <strong><field name="name"/></strong>
+                                    </div>
+                                    <div>
+                                        <field name="reference"/> - <field name="model"/>
+                                    </div>
+                                    <div>
+                                        <field name="client_id"/>
+                                    </div>
+                                    <div t-if="record.warranty_end.raw_value">
+                                        <span t-if="record.warranty_status.raw_value == 'expired'" class="text-danger">
+                                            Garantie expirée
+                                        </span>
+                                        <span t-elif="record.warranty_status.raw_value == 'expires_soon'" class="text-warning">
+                                            Garantie expire bientôt
+                                        </span>
+                                        <span t-else="">
+                                            Garantie: <field name="warranty_end"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Vue de recherche pour les équipements -->
+        <record id="view_it_equipment_search" model="ir.ui.view">
+            <field name="name">it.equipment.search</field>
+            <field name="model">it.equipment</field>
+            <field name="arch" type="xml">
+                <search string="Équipements">
+                    <field name="name"/>
+                    <field name="reference"/>
+                    <field name="client_id"/>
+                    <field name="type_id"/>
+                    <field name="brand_id"/>
+                    <field name="model"/>
+                    <field name="serial_number"/>
+                    <separator/>
+                    <filter string="En stock" name="in_stock" domain="[('state', '=', 'in_stock')]"/>
+                    <filter string="En utilisation" name="in_use" domain="[('state', '=', 'in_use')]"/>
+                    <filter string="En réparation" name="in_repair" domain="[('state', '=', 'in_repair')]"/>
+                    <filter string="Fin de vie" name="end_of_life" domain="[('state', '=', 'end_of_life')]"/>
+                    <separator/>
+                    <filter string="Garantie valide" name="warranty_valid" domain="[('warranty_status', '=', 'valid')]"/>
+                    <filter string="Garantie expire bientôt" name="warranty_expires_soon" domain="[('warranty_status', '=', 'expires_soon')]"/>
+                    <filter string="Garantie expirée" name="warranty_expired" domain="[('warranty_status', '=', 'expired')]"/>
+                    <separator/>
+                    <filter string="Équipements actifs" name="active" domain="[('active', '=', True)]"/>
+                    <filter string="Équipements archivés" name="inactive" domain="[('active', '=', False)]"/>
+                    <group expand="0" string="Regrouper par">
+                        <filter string="Client" name="group_by_client" domain="[]" context="{'group_by': 'client_id'}"/>
+                        <filter string="Site" name="group_by_site" domain="[]" context="{'group_by': 'site_id'}"/>
+                        <filter string="Type" name="group_by_type" domain="[]" context="{'group_by': 'type_id'}"/>
+                        <filter string="Marque" name="group_by_brand" domain="[]" context="{'group_by': 'brand_id'}"/>
+                        <filter string="État" name="group_by_state" domain="[]" context="{'group_by': 'state'}"/>
+                        <filter string="État de garantie" name="group_by_warranty" domain="[]" context="{'group_by': 'warranty_status'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Vues pour les types d'équipements -->
+        <record id="view_it_equipment_type_form" model="ir.ui.view">
+            <field name="name">it.equipment.type.form</field>
+            <field name="model">it.equipment.type</field>
+            <field name="arch" type="xml">
+                <form string="Type d'équipement">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_equipment" type="object" class="oe_stat_button" icon="fa-laptop">
+                                <field name="equipment_count" widget="statinfo" string="Équipements"/>
+                            </button>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="code"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description" name="description">
+                                <field name="description"/>
+                            </page>
+                            <page string="Équipements" name="equipment">
+                                <field name="equipment_ids">
+                                    <list>
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="client_id"/>
+                                        <field name="brand_id"/>
+                                        <field name="model"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_it_equipment_type_tree" model="ir.ui.view">
+            <field name="name">it.equipment.type.tree</field>
+            <field name="model">it.equipment.type</field>
+            <field name="arch" type="xml">
+                <list string="Types d'équipements">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="equipment_count"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vues pour les marques d'équipements -->
+        <record id="view_it_equipment_brand_form" model="ir.ui.view">
+            <field name="name">it.equipment.brand.form</field>
+            <field name="model">it.equipment.brand</field>
+            <field name="arch" type="xml">
+                <form string="Marque d'équipement">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_equipment" type="object" class="oe_stat_button" icon="fa-laptop">
+                                <field name="equipment_count" widget="statinfo" string="Équipements"/>
+                            </button>
+                        </div>
+                        <field name="logo" widget="image" class="oe_avatar"/>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                                <field name="name" placeholder="Nom de la marque"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <field name="website" widget="url"/>
+                        </group>
+                        <notebook>
+                            <page string="Équipements" name="equipment">
+                                <field name="equipment_ids">
+                                    <list>
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="client_id"/>
+                                        <field name="type_id"/>
+                                        <field name="model"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_it_equipment_brand_tree" model="ir.ui.view">
+            <field name="name">it.equipment.brand.tree</field>
+            <field name="model">it.equipment.brand</field>
+            <field name="arch" type="xml">
+                <list string="Marques d'équipements">
+                    <field name="name"/>
+                    <field name="website"/>
+                    <field name="equipment_count"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Actions -->
+        <record id="action_it_equipment" model="ir.actions.act_window">
+            <field name="name">Équipements</field>
+            <field name="res_model">it.equipment</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer un nouvel équipement
+                </p>
+            </field>
+        </record>
+
+        <record id="action_it_equipment_type" model="ir.actions.act_window">
+            <field name="name">Types d'équipements</field>
+            <field name="res_model">it.equipment.type</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer un nouveau type d'équipement
+                </p>
+            </field>
+        </record>
+
+        <record id="action_it_equipment_brand" model="ir.actions.act_window">
+            <field name="name">Marques d'équipements</field>
+            <field name="res_model">it.equipment.brand</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer une nouvelle marque d'équipement
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

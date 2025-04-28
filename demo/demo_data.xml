@@ -1,0 +1,377 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Types d'équipements -->
+        <record id="equipment_type_workstation" model="it.equipment.type">
+            <field name="name">Poste de travail</field>
+            <field name="code">WORK</field>
+            <field name="description">Ordinateurs de bureau et portables utilisés par les employés</field>
+        </record>
+
+        <record id="equipment_type_server" model="it.equipment.type">
+            <field name="name">Serveur</field>
+            <field name="code">SERVER</field>
+            <field name="description">Serveurs physiques ou virtuels</field>
+        </record>
+
+        <record id="equipment_type_printer" model="it.equipment.type">
+            <field name="name">Imprimante</field>
+            <field name="code">PRINT</field>
+            <field name="description">Imprimantes, scanners et multifonctions</field>
+        </record>
+
+        <record id="equipment_type_network" model="it.equipment.type">
+            <field name="name">Équipement réseau</field>
+            <field name="code">NET</field>
+            <field name="description">Switchs, routeurs, firewalls</field>
+        </record>
+
+        <!-- Marques d'équipements -->
+        <record id="equipment_brand_dell" model="it.equipment.brand">
+            <field name="name">Dell</field>
+            <field name="website">https://www.dell.com</field>
+        </record>
+
+        <record id="equipment_brand_hp" model="it.equipment.brand">
+            <field name="name">HP</field>
+            <field name="website">https://www.hp.com</field>
+        </record>
+
+        <record id="equipment_brand_lenovo" model="it.equipment.brand">
+            <field name="name">Lenovo</field>
+            <field name="website">https://www.lenovo.com</field>
+        </record>
+
+        <record id="equipment_brand_cisco" model="it.equipment.brand">
+            <field name="name">Cisco</field>
+            <field name="website">https://www.cisco.com</field>
+        </record>
+
+        <!-- Catégories de logiciels -->
+        <record id="software_category_os" model="it.software.category">
+            <field name="name">Systèmes d'exploitation</field>
+        </record>
+
+        <record id="software_category_office" model="it.software.category">
+            <field name="name">Bureautique</field>
+        </record>
+
+        <record id="software_category_security" model="it.software.category">
+            <field name="name">Sécurité</field>
+        </record>
+
+        <record id="software_category_business" model="it.software.category">
+            <field name="name">Applications métier</field>
+        </record>
+
+        <!-- Éditeurs de logiciels -->
+        <record id="software_editor_microsoft" model="it.software.editor">
+            <field name="name">Microsoft</field>
+            <field name="website">https://www.microsoft.com</field>
+        </record>
+
+        <record id="software_editor_adobe" model="it.software.editor">
+            <field name="name">Adobe</field>
+            <field name="website">https://www.adobe.com</field>
+        </record>
+
+        <record id="software_editor_symantec" model="it.software.editor">
+            <field name="name">Symantec</field>
+            <field name="website">https://www.symantec.com</field>
+        </record>
+
+        <record id="software_editor_oracle" model="it.software.editor">
+            <field name="name">Oracle</field>
+            <field name="website">https://www.oracle.com</field>
+        </record>
+
+        <!-- Types de contrats -->
+        <record id="contract_type_maintenance" model="it.contract.type">
+            <field name="name">Contrat de maintenance</field>
+            <field name="description">Maintenance préventive et corrective du matériel</field>
+        </record>
+
+        <record id="contract_type_support" model="it.contract.type">
+            <field name="name">Support technique</field>
+            <field name="description">Assistance technique et support utilisateurs</field>
+        </record>
+
+        <record id="contract_type_full_service" model="it.contract.type">
+            <field name="name">Service complet</field>
+            <field name="description">Maintenance, support et infogérance complète</field>
+        </record>
+
+        <!-- Types d'interventions -->
+        <record id="intervention_type_install" model="it.intervention.type">
+            <field name="name">Installation</field>
+            <field name="description">Installation de matériel ou de logiciel</field>
+            <field name="color">4</field>
+        </record>
+
+        <record id="intervention_type_maintenance" model="it.intervention.type">
+            <field name="name">Maintenance préventive</field>
+            <field name="description">Maintenance planifiée pour prévenir les pannes</field>
+            <field name="color">3</field>
+        </record>
+
+        <record id="intervention_type_repair" model="it.intervention.type">
+            <field name="name">Réparation</field>
+            <field name="description">Réparation suite à une panne</field>
+            <field name="color">1</field>
+        </record>
+
+        <record id="intervention_type_support" model="it.intervention.type">
+            <field name="name">Support utilisateur</field>
+            <field name="description">Assistance à l'utilisation</field>
+            <field name="color">8</field>
+        </record>
+
+        <!-- Priorités d'interventions -->
+        <record id="intervention_priority_low" model="it.intervention.priority">
+            <field name="name">Basse</field>
+            <field name="sequence">30</field>
+            <field name="color">8</field>
+            <field name="response_time_hours">24</field>
+            <field name="resolution_time_hours">72</field>
+        </record>
+
+        <record id="intervention_priority_medium" model="it.intervention.priority">
+            <field name="name">Moyenne</field>
+            <field name="sequence">20</field>
+            <field name="color">3</field>
+            <field name="response_time_hours">8</field>
+            <field name="resolution_time_hours">24</field>
+        </record>
+
+        <record id="intervention_priority_high" model="it.intervention.priority">
+            <field name="name">Haute</field>
+            <field name="sequence">10</field>
+            <field name="color">2</field>
+            <field name="response_time_hours">2</field>
+            <field name="resolution_time_hours">8</field>
+        </record>
+
+        <record id="intervention_priority_critical" model="it.intervention.priority">
+            <field name="name">Critique</field>
+            <field name="sequence">5</field>
+            <field name="color">1</field>
+            <field name="response_time_hours">1</field>
+            <field name="resolution_time_hours">4</field>
+        </record>
+
+        <!-- Types d'alertes -->
+        <record id="alert_type_warranty" model="it.alert.type">
+            <field name="name">Fin de garantie équipement</field>
+            <field name="model">it.equipment</field>
+            <field name="days_before">30</field>
+            <field name="description">Alerte avant expiration de la garantie d'un équipement</field>
+            <field name="color">1</field>
+        </record>
+
+        <record id="alert_type_license" model="it.alert.type">
+            <field name="name">Expiration de licence logiciel</field>
+            <field name="model">it.software</field>
+            <field name="days_before">30</field>
+            <field name="description">Alerte avant expiration d'une licence logicielle</field>
+            <field name="color">3</field>
+        </record>
+
+        <record id="alert_type_contract" model="it.alert.type">
+            <field name="name">Renouvellement de contrat</field>
+            <field name="model">it.contract</field>
+            <field name="days_before">60</field>
+            <field name="description">Alerte avant expiration d'un contrat</field>
+            <field name="color">4</field>
+        </record>
+
+        <!-- Clients de démonstration -->
+        <record id="demo_client_1" model="it.client">
+            <field name="name">Société ABC</field>
+            <field name="partner_id" ref="base.res_partner_12"/>
+            <field name="street">123 Avenue Principale</field>
+            <field name="city">Paris</field>
+            <field name="zip">75008</field>
+            <field name="country_id" ref="base.fr"/>
+        </record>
+
+        <record id="demo_client_2" model="it.client">
+            <field name="name">Entreprise XYZ</field>
+            <field name="partner_id" ref="base.res_partner_2"/>
+            <field name="street">456 Rue du Commerce</field>
+            <field name="city">Lyon</field>
+            <field name="zip">69001</field>
+            <field name="country_id" ref="base.fr"/>
+        </record>
+
+        <!-- Sites clients -->
+        <record id="demo_site_1" model="it.client.site">
+            <field name="name">Siège Social</field>
+            <field name="client_id" ref="demo_client_1"/>
+            <field name="address">123 Avenue Principale</field>
+            <field name="city">Paris</field>
+            <field name="zip">75008</field>
+            <field name="country_id" ref="base.fr"/>
+        </record>
+
+        <record id="demo_site_2" model="it.client.site">
+            <field name="name">Agence Nord</field>
+            <field name="client_id" ref="demo_client_1"/>
+            <field name="address">45 Rue des Fleurs</field>
+            <field name="city">Lille</field>
+            <field name="zip">59000</field>
+            <field name="country_id" ref="base.fr"/>
+        </record>
+
+        <!-- Contacts clients -->
+        <record id="demo_contact_1" model="it.client.contact">
+            <field name="client_id" ref="demo_client_1"/>
+            <field name="partner_id" ref="base.res_partner_address_1"/>
+            <field name="function">Directeur IT</field>
+            <field name="is_primary" eval="True"/>
+            <field name="is_technical" eval="True"/>
+        </record>
+
+        <record id="demo_contact_2" model="it.client.contact">
+            <field name="client_id" ref="demo_client_1"/>
+            <field name="partner_id" ref="base.res_partner_address_2"/>
+            <field name="function">Responsable Comptabilité</field>
+            <field name="is_billing" eval="True"/>
+        </record>
+
+        <!-- Équipements -->
+        <record id="demo_equipment_1" model="it.equipment">
+            <field name="name">Serveur Principal</field>
+            <field name="client_id" ref="demo_client_1"/>
+            <field name="site_id" ref="demo_site_1"/>
+            <field name="type_id" ref="equipment_type_server"/>
+            <field name="brand_id" ref="equipment_brand_dell"/>
+            <field name="model">PowerEdge R740</field>
+            <field name="serial_number">SRV2023001</field>
+            <field name="purchase_date" eval="(DateTime.today() - relativedelta(months=18)).strftime('%Y-%m-%d')"/>
+            <field name="installation_date" eval="(DateTime.today() - relativedelta(months=17)).strftime('%Y-%m-%d')"/>
+            <field name="warranty_end" eval="(DateTime.today() + relativedelta(months=6)).strftime('%Y-%m-%d')"/>
+            <field name="purchase_cost">8500</field>
+            <field name="state">in_use</field>
+            <field name="ip_address">192.168.1.10</field>
+            <field name="technical_specs">
+                CPU: 2x Intel Xeon Gold 6248R
+                RAM: 128GB DDR4
+                Disques: 8x 1.8TB SAS 10K
+                RAID: PERC H740P
+            </field>
+        </record>
+
+        <record id="demo_equipment_2" model="it.equipment">
+            <field name="name">Poste de travail Direction</field>
+            <field name="client_id" ref="demo_client_1"/>
+            <field name="site_id" ref="demo_site_1"/>
+            <field name="user_id" ref="base.res_partner_address_1"/>
+            <field name="type_id" ref="equipment_type_workstation"/>
+            <field name="brand_id" ref="equipment_brand_lenovo"/>
+            <field name="model">ThinkPad X1 Carbon</field>
+            <field name="serial_number">LPT2023001</field>
+            <field name="purchase_date" eval="(DateTime.today() - relativedelta(months=6)).strftime('%Y-%m-%d')"/>
+            <field name="installation_date" eval="(DateTime.today() - relativedelta(months=6)).strftime('%Y-%m-%d')"/>
+            <field name="warranty_end" eval="(DateTime.today() + relativedelta(months=30)).strftime('%Y-%m-%d')"/>
+            <field name="purchase_cost">1800</field>
+            <field name="state">in_use</field>
+            <field name="ip_address">192.168.1.101</field>
+            <field name="mac_address">00:1A:2B:3C:4D:5E</field>
+            <field name="technical_specs">
+                CPU: Intel Core i7-1165G7
+                RAM: 16GB LPDDR4X
+                Disque: 512GB SSD NVMe
+                Écran: 14" 4K
+            </field>
+        </record>
+
+        <!-- Logiciels -->
+        <record id="demo_software_1" model="it.software">
+            <field name="name">Windows Server 2022</field>
+            <field name="client_id" ref="demo_client_1"/>
+            <field name="editor_id" ref="software_editor_microsoft"/>
+            <field name="category_id" ref="software_category_os"/>
+            <field name="version">Datacenter</field>
+            <field name="license_type">perpetual</field>
+            <field name="license_key">XXXX-XXXX-XXXX-XXXX-XXXX</field>
+            <field name="purchase_date" eval="(DateTime.today() - relativedelta(months=18)).strftime('%Y-%m-%d')"/>
+            <field name="installation_date" eval="(DateTime.today() - relativedelta(months=17)).strftime('%Y-%m-%d')"/>
+            <field name="state">active</field>
+        </record>
+
+        <record id="demo_software_2" model="it.software">
+            <field name="name">Microsoft 365</field>
+            <field name="client_id" ref="demo_client_1"/>
+            <field name="editor_id" ref="software_editor_microsoft"/>
+            <field name="category_id" ref="software_category_office"/>
+            <field name="version">Business Premium</field>
+            <field name="license_type">subscription</field>
+            <field name="purchase_date" eval="(DateTime.today() - relativedelta(months=6)).strftime('%Y-%m-%d')"/>
+            <field name="installation_date" eval="(DateTime.today() - relativedelta(months=6)).strftime('%Y-%m-%d')"/>
+            <field name="expiration_date" eval="(DateTime.today() + relativedelta(months=6)).strftime('%Y-%m-%d')"/>
+            <field name="purchase_cost">240</field>
+            <field name="renewal_cost">240</field>
+            <field name="state">active</field>
+        </record>
+
+        <!-- Contrats -->
+        <record id="demo_contract_1" model="it.contract">
+            <field name="name">Contrat de maintenance - Serveurs</field>
+            <field name="client_id" ref="demo_client_1"/>
+            <field name="type_id" ref="contract_type_maintenance"/>
+            <field name="date_start" eval="(DateTime.today() - relativedelta(months=12)).strftime('%Y-%m-%d')"/>
+            <field name="date_end" eval="(DateTime.today() + relativedelta(months=12)).strftime('%Y-%m-%d')"/>
+            <field name="invoicing_frequency">quarterly</field>
+            <field name="price">2400</field>
+            <field name="recurring_amount">600</field>
+            <field name="state">active</field>
+            <field name="description">Contrat de maintenance pour les serveurs du client. Inclut la maintenance préventive et corrective.</field>
+            <field name="sla_response_time">2</field>
+            <field name="sla_resolution_time">8</field>
+        </record>
+
+        <!-- Lier les équipements au contrat -->
+        <record id="demo_equipment_contract_rel_1" model="it.equipment.contract.rel">
+            <field name="equipment_id" ref="demo_equipment_1"/>
+            <field name="contract_id" ref="demo_contract_1"/>
+        </record>
+
+        <!-- Interventions -->
+        <record id="demo_intervention_1" model="it.intervention">
+            <field name="name">Installation serveur</field>
+            <field name="client_id" ref="demo_client_1"/>
+            <field name="equipment_id" ref="demo_equipment_1"/>
+            <field name="type_id" ref="intervention_type_install"/>
+            <field name="priority_id" ref="intervention_priority_medium"/>
+            <field name="date_start" eval="(DateTime.today() - relativedelta(months=17)).strftime('%Y-%m-%d')"/>
+            <field name="date_end" eval="(DateTime.today() - relativedelta(months=17)).strftime('%Y-%m-%d')"/>
+            <field name="state">closed</field>
+            <field name="description">Installation du nouveau serveur PowerEdge R740 dans la salle serveur.</field>
+            <field name="solution">
+                - Montage du serveur en rack
+                - Configuration RAID
+                - Installation du système d'exploitation
+                - Configuration réseau
+                - Tests fonctionnels
+            </field>
+        </record>
+
+        <record id="demo_intervention_2" model="it.intervention">
+            <field name="name">Mise à jour firmware serveur</field>
+            <field name="client_id" ref="demo_client_1"/>
+            <field name="equipment_id" ref="demo_equipment_1"/>
+            <field name="type_id" ref="intervention_type_maintenance"/>
+            <field name="priority_id" ref="intervention_priority_low"/>
+            <field name="date_start" eval="(DateTime.today() - relativedelta(days=15)).strftime('%Y-%m-%d')"/>
+            <field name="date_end" eval="(DateTime.today() - relativedelta(days=15)).strftime('%Y-%m-%d')"/>
+            <field name="state">closed</field>
+            <field name="description">Mise à jour du BIOS et du firmware du contrôleur RAID.</field>
+            <field name="solution">
+                - Téléchargement des dernières versions
+                - Sauvegarde de la configuration
+                - Application des mises à jour
+                - Vérification du bon fonctionnement
+            </field>
+        </record>
+    </data>
+</odoo>

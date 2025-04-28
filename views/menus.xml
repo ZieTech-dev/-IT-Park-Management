@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Menu racine du module -->
+        <menuitem id="menu_it_park_root" 
+                  name="Gestion de parc IT" 
+                  web_icon="it_park_management,static/description/icon.png" 
+                  sequence="70"/>
+
+        <!-- Sous-menu Tableau de bord -->
+        <menuitem id="menu_it_park_dashboard" 
+                  name="Tableau de bord" 
+                  parent="menu_it_park_root" 
+                  sequence="10"/>
+
+        <!-- Sous-menu Clients -->
+        <menuitem id="menu_it_park_clients" 
+                  name="Clients" 
+                  parent="menu_it_park_root" 
+                  sequence="20"/>
+            <menuitem id="menu_it_client" 
+                      name="Clients" 
+                      parent="menu_it_park_clients" 
+                      action="action_it_client" 
+                      sequence="10"/>
+
+        <!-- Sous-menu Équipements -->
+        <menuitem id="menu_it_park_equipment" 
+                  name="Équipements" 
+                  parent="menu_it_park_root" 
+                  sequence="30"/>
+            <menuitem id="menu_it_equipment" 
+                      name="Équipements" 
+                      parent="menu_it_park_equipment" 
+                      action="action_it_equipment" 
+                      sequence="10"/>
+            <menuitem id="menu_it_equipment_type" 
+                      name="Types d'équipements" 
+                      parent="menu_it_park_equipment" 
+                      action="action_it_equipment_type" 
+                      sequence="20"/>
+            <menuitem id="menu_it_equipment_brand" 
+                      name="Marques d'équipements" 
+                      parent="menu_it_park_equipment" 
+                      action="action_it_equipment_brand" 
+                      sequence="30"/>
+
+        <!-- Sous-menu Logiciels -->
+        <menuitem id="menu_it_park_software" 
+                  name="Logiciels" 
+                  parent="menu_it_park_root" 
+                  sequence="40"/>
+            <menuitem id="menu_it_software" 
+                      name="Logiciels" 
+                      parent="menu_it_park_software" 
+                      action="action_it_software" 
+                      sequence="10"/>
+            <menuitem id="menu_it_software_category" 
+                      name="Catégories de logiciels" 
+                      parent="menu_it_park_software" 
+                      action="action_it_software_category" 
+                      sequence="20"/>
+            <menuitem id="menu_it_software_editor" 
+                      name="Éditeurs de logiciels" 
+                      parent="menu_it_park_software" 
+                      action="action_it_software_editor" 
+                      sequence="30"/>
+
+        <!-- Sous-menu Contrats -->
+        <menuitem id="menu_it_park_contracts" 
+                  name="Contrats" 
+                  parent="menu_it_park_root" 
+                  sequence="50"/>
+            <menuitem id="menu_it_contract" 
+                      name="Contrats" 
+                      parent="menu_it_park_contracts" 
+                      action="action_it_contract" 
+                      sequence="10"/>
+            <menuitem id="menu_it_contract_type" 
+                      name="Types de contrats" 
+                      parent="menu_it_park_contracts" 
+                      action="action_it_contract_type" 
+                      sequence="20"/>
+
+        <!-- Sous-menu Interventions -->
+        <menuitem id="menu_it_park_interventions" 
+                  name="Interventions" 
+                  parent="menu_it_park_root" 
+                  sequence="60"/>
+            <menuitem id="menu_it_intervention" 
+                      name="Interventions" 
+                      parent="menu_it_park_interventions" 
+                      action="action_it_intervention" 
+                      sequence="10"/>
+            <menuitem id="menu_it_intervention_type" 
+                      name="Types d'interventions" 
+                      parent="menu_it_park_interventions" 
+                      action="action_it_intervention_type" 
+                      sequence="20"/>
+            <menuitem id="menu_it_intervention_priority" 
+                      name="Priorités d'interventions" 
+                      parent="menu_it_park_interventions" 
+                      action="action_it_intervention_priority" 
+                      sequence="30"/>
+
+        <!-- Sous-menu Alertes -->
+        <menuitem id="menu_it_park_alerts" 
+                  name="Alertes" 
+                  parent="menu_it_park_root" 
+                  sequence="70"/>
+            <menuitem id="menu_it_alert" 
+                      name="Alertes" 
+                      parent="menu_it_park_alerts" 
+                      action="action_it_alert" 
+                      sequence="10"/>
+            <menuitem id="menu_it_alert_type" 
+                      name="Types d'alertes" 
+                      parent="menu_it_park_alerts" 
+                      action="action_it_alert_type" 
+                      sequence="20"/>
+
+        <!-- Sous-menu Configuration -->
+        <menuitem id="menu_it_park_configuration" 
+                  name="Configuration" 
+                  parent="menu_it_park_root" 
+                  sequence="100" 
+                  groups="it_park_management.group_it_park_manager"/>
+    </data>
+</odoo>

@@ -1,0 +1,384 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Vue formulaire pour les logiciels -->
+        <record id="view_it_software_form" model="ir.ui.view">
+            <field name="name">it.software.form</field>
+            <field name="model">it.software</field>
+            <field name="arch" type="xml">
+                <form string="Logiciel">
+                    <header>
+                        <button name="action_set_active" type="object" string="Activer"
+                                invisible_if="state != 'draft'" 
+                                class="oe_highlight"/>
+                        
+                        <button name="action_set_to_renew" type="object" string="À renouveler"
+                                invisible_if="state != 'active'"
+                                class="oe_highlight"/>
+
+                        <button name="action_set_renewed" type="object" string="Renouveler"
+                                invisible_if="state != 'to_renew'"
+                                class="oe_highlight"/>
+
+                        <button name="action_set_cancelled" type="object" string="Annuler"
+                                invisible_if="state == 'cancelled'"
+                                groups="it_park_management.group_it_park_manager"/>
+
+                        <field name="state" widget="statusbar" statusbar_visible="draft,active,to_renew,expired"/>
+                    </header>
+
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_equipment" type="object" class="oe_stat_button" icon="fa-laptop">
+                                <field name="equipment_count" widget="statinfo" string="Équipements"/>
+                            </button>
+                            <button name="action_view_contracts" type="object" class="oe_stat_button" icon="fa-file-text-o">
+                                <field name="contract_count" widget="statinfo" string="Contrats"/>
+                            </button>
+                            <button name="action_view_interventions" type="object" class="oe_stat_button" icon="fa-wrench">
+                                <field name="intervention_count" widget="statinfo" string="Interventions"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                                <field name="name" placeholder="Nom du logiciel"/>
+                            </h1>
+                            <label for="reference" class="oe_edit_only"/>
+                            <h2>
+                                <field name="reference" readonly="1"/>
+                            </h2>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="client_id" required="1"/>
+                                <field name="editor_id"/>
+                                <field name="category_id"/>
+                                <field name="version"/>
+                                <field name="active" widget="boolean_toggle"/>
+                            </group>
+                            <group>
+                                <field name="is_license"/>
+                                <field name="license_type" invisible_if="not is_license"/>
+                                <field name="license_key" invisible_if="not is_license"/>
+                                <field name="days_to_expiration" invisible_if="not is_license"/>
+                                <field name="license_status" invisible_if="not is_license"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Cycle de vie" name="lifecycle">
+                                <group>
+                                    <group>
+                                        <field name="purchase_date"/>
+                                        <field name="installation_date"/>
+                                        <field name="expiration_date" required_if="license_type in ('subscription', 'trial')"/>
+                                        <field name="renewal_date"/>
+                                    </group>
+                                    <group>
+                                        <field name="purchase_cost" widget="monetary"/>
+                                        <field name="renewal_cost" widget="monetary"/>
+                                        <field name="currency_id" invisible="1"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Installé sur" name="equipment">
+                                <field name="equipment_ids">
+                                    <list>
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="type_id"/>
+                                        <field name="model"/>
+                                        <field name="site_id"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Contrats associés" name="contracts">
+                                <field name="contract_ids">
+                                    <list>
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="type_id"/>
+                                        <field name="date_start"/>
+                                        <field name="date_end"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Interventions" name="interventions">
+                                <field name="intervention_ids">
+                                    <list>
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="type_id"/>
+                                        <field name="date_start"/>
+                                        <field name="user_id"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Notes" name="notes">
+                                <field name="notes"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vue arbre (liste) pour les logiciels -->
+        <record id="view_it_software_tree" model="ir.ui.view">
+            <field name="name">it.software.tree</field>
+            <field name="model">it.software</field>
+            <field name="arch" type="xml">
+                <list string="Logiciels" decoration-danger="license_status=='expired'" decoration-warning="license_status=='expires_soon'">
+                    <field name="reference"/>
+                    <field name="name"/>
+                    <field name="client_id"/>
+                    <field name="editor_id"/>
+                    <field name="version"/>
+                    <field name="license_type"/>
+                    <field name="expiration_date"/>
+                    <field name="license_status" invisible="1"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vue kanban pour les logiciels -->
+        <record id="view_it_software_kanban" model="ir.ui.view">
+            <field name="name">it.software.kanban</field>
+            <field name="model">it.software</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state" class="o_kanban_small_column">
+                    <field name="reference"/>
+                    <field name="name"/>
+                    <field name="client_id"/>
+                    <field name="editor_id"/>
+                    <field name="version"/>
+                    <field name="license_type"/>
+                    <field name="expiration_date"/>
+                    <field name="license_status"/>
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click
+                                              #{record.license_status.raw_value == 'expired' ? 'oe_kanban_card_danger' : ''}
+                                              #{record.license_status.raw_value == 'expires_soon' ? 'oe_kanban_card_warning' : ''}">
+                                <div class="oe_kanban_content">
+                                    <div>
+                                        <strong><field name="name"/></strong>
+                                    </div>
+                                    <div>
+                                        <field name="reference"/> - <field name="version"/>
+                                    </div>
+                                    <div>
+                                        <field name="client_id"/>
+                                    </div>
+                                    <div t-if="record.expiration_date.raw_value">
+                                        <span t-if="record.license_status.raw_value == 'expired'" class="text-danger">
+                                            Licence expirée
+                                        </span>
+                                        <span t-elif="record.license_status.raw_value == 'expires_soon'" class="text-warning">
+                                            Licence expire bientôt
+                                        </span>
+                                        <span t-else="">
+                                            Exp: <field name="expiration_date"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Vue de recherche pour les logiciels -->
+        <record id="view_it_software_search" model="ir.ui.view">
+            <field name="name">it.software.search</field>
+            <field name="model">it.software</field>
+            <field name="arch" type="xml">
+                <search string="Logiciels">
+                    <field name="name"/>
+                    <field name="reference"/>
+                    <field name="client_id"/>
+                    <field name="editor_id"/>
+                    <field name="version"/>
+                    <field name="license_key"/>
+                    <separator/>
+                    <filter string="Actifs" name="active_state" domain="[('state', '=', 'active')]"/>
+                    <filter string="À renouveler" name="to_renew" domain="[('state', '=', 'to_renew')]"/>
+                    <filter string="Expirés" name="expired" domain="[('state', '=', 'expired')]"/>
+                    <separator/>
+                    <filter string="Licence valide" name="license_valid" domain="[('license_status', '=', 'valid')]"/>
+                    <filter string="Licence expire bientôt" name="license_expires_soon" domain="[('license_status', '=', 'expires_soon')]"/>
+                    <filter string="Licence expirée" name="license_expired" domain="[('license_status', '=', 'expired')]"/>
+                    <separator/>
+                    <filter string="Logiciels actifs" name="active" domain="[('active', '=', True)]"/>
+                    <filter string="Logiciels archivés" name="inactive" domain="[('active', '=', False)]"/>
+                    <group expand="0" string="Regrouper par">
+                        <filter string="Client" name="group_by_client" domain="[]" context="{'group_by': 'client_id'}"/>
+                        <filter string="Éditeur" name="group_by_editor" domain="[]" context="{'group_by': 'editor_id'}"/>
+                        <filter string="Catégorie" name="group_by_category" domain="[]" context="{'group_by': 'category_id'}"/>
+                        <filter string="Type de licence" name="group_by_license_type" domain="[]" context="{'group_by': 'license_type'}"/>
+                        <filter string="État" name="group_by_state" domain="[]" context="{'group_by': 'state'}"/>
+                        <filter string="État de licence" name="group_by_license" domain="[]" context="{'group_by': 'license_status'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Vues pour les catégories de logiciels -->
+        <record id="view_it_software_category_form" model="ir.ui.view">
+            <field name="name">it.software.category.form</field>
+            <field name="model">it.software.category</field>
+            <field name="arch" type="xml">
+                <form string="Catégorie de logiciel">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_software" type="object" class="oe_stat_button" icon="fa-file-code-o">
+                                <field name="software_count" widget="statinfo" string="Logiciels"/>
+                            </button>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="parent_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description" name="description">
+                                <field name="description"/>
+                            </page>
+                            <page string="Sous-catégories" name="subcategories">
+                                <field name="child_ids">
+                                    <list>
+                                        <field name="name"/>
+                                        <field name="software_count"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Logiciels" name="software">
+                                <field name="software_ids">
+                                    <list>
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="client_id"/>
+                                        <field name="editor_id"/>
+                                        <field name="version"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_it_software_category_tree" model="ir.ui.view">
+            <field name="name">it.software.category.tree</field>
+            <field name="model">it.software.category</field>
+            <field name="arch" type="xml">
+                <list string="Catégories de logiciels">
+                    <field name="name"/>
+                    <field name="parent_id"/>
+                    <field name="software_count"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vues pour les éditeurs de logiciels -->
+        <record id="view_it_software_editor_form" model="ir.ui.view">
+            <field name="name">it.software.editor.form</field>
+            <field name="model">it.software.editor</field>
+            <field name="arch" type="xml">
+                <form string="Éditeur de logiciel">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_software" type="object" class="oe_stat_button" icon="fa-file-code-o">
+                                <field name="software_count" widget="statinfo" string="Logiciels"/>
+                            </button>
+                        </div>
+                        <field name="logo" widget="image" class="oe_avatar"/>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                                <field name="name" placeholder="Nom de l'éditeur"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <field name="website" widget="url"/>
+                        </group>
+                        <notebook>
+                            <page string="Logiciels" name="software">
+                                <field name="software_ids">
+                                    <list>
+                                        <field name="reference"/>
+                                        <field name="name"/>
+                                        <field name="client_id"/>
+                                        <field name="version"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_it_software_editor_tree" model="ir.ui.view">
+            <field name="name">it.software.editor.tree</field>
+            <field name="model">it.software.editor</field>
+            <field name="arch" type="xml">
+                <list string="Éditeurs de logiciels">
+                    <field name="name"/>
+                    <field name="website"/>
+                    <field name="software_count"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Actions -->
+        <record id="action_it_software" model="ir.actions.act_window">
+            <field name="name">Logiciels</field>
+            <field name="res_model">it.software</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer un nouveau logiciel
+                </p>
+            </field>
+        </record>
+
+        <record id="action_it_software_category" model="ir.actions.act_window">
+            <field name="name">Catégories de logiciels</field>
+            <field name="res_model">it.software.category</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer une nouvelle catégorie de logiciel
+                </p>
+            </field>
+        </record>
+
+        <record id="action_it_software_editor" model="ir.actions.act_window">
+            <field name="name">Éditeurs de logiciels</field>
+            <field name="res_model">it.software.editor</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer un nouvel éditeur de logiciel
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Vue formulaire pour les alertes -->
+        <record id="view_it_alert_form" model="ir.ui.view">
+            <field name="name">it.alert.form</field>
+            <field name="model">it.alert</field>
+            <field name="arch" type="xml">
+                <form string="Alerte">
+                    <header>
+                        <button name="action_set_in_progress" type="object" string="En cours" 
+                                invisible_if="state not in ['draft']" 
+                                class="oe_highlight"/>
+                        <button name="action_set_done" type="object" string="Traité" 
+                                invisible_if="state not in ['in_progress']" 
+                                class="oe_highlight"/>
+                        <button name="action_set_cancelled" type="object" string="Annuler" 
+                                invisible_if="state in ['done', 'cancelled']" 
+                                groups="it_park_management.group_it_park_manager"/>
+                        <button name="action_view_related_record" type="object" string="Voir l'élément concerné" 
+                                invisible_if="res_model == False or res_id == False" 
+                                class="btn-secondary"/>
+                        <field name="state" widget="statusbar" 
+                            statusbar_visible="draft,in_progress,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                                <field name="name" placeholder="Titre de l'alerte"/>
+                            </h1>
+                            <label for="reference" class="oe_edit_only"/>
+                            <h2>
+                                <field name="reference" readonly="1"/>
+                            </h2>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="type_id" required="1"/>
+                                <field name="client_id"/>
+                                <field name="date"/>
+                                <field name="create_date" readonly="1"/>
+                                <field name="user_id"/>
+                            </group>
+                            <group>
+                                <field name="res_model" invisible="1"/>
+                                <field name="res_id" invisible="1"/>
+                                <field name="equipment_id" readonly="1" 
+                                    invisible_if="equipment_id == False"/>
+                                <field name="software_id" readonly="1" 
+                                    invisible_if="software_id == False"/>
+                                <field name="contract_id" readonly="1" 
+                                    invisible_if="contract_id == False"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description" name="description">
+                                <field name="description" placeholder="Description détaillée de l'alerte..."/>
+                            </page>
+                            <page string="Actions prises" name="actions" invisible_if="state == 'draft'">
+                                <field name="action_taken" placeholder="Actions prises pour traiter cette alerte..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        
+        <record id="view_it_alert_tree" model="ir.ui.view">
+            <field name="name">it.alert.tree</field>
+            <field name="model">it.alert</field>
+            <field name="arch" type="xml">
+                <list string="Alertes" decoration-danger="state=='draft'" decoration-warning="state=='in_progress'">
+                    <field name="reference"/>
+                    <field name="name"/>
+                    <field name="type_id"/>
+                    <field name="client_id"/>
+                    <field name="date"/>
+                    <field name="equipment_id"/>
+                    <field name="software_id"/>
+                    <field name="contract_id"/>
+                    <field name="user_id"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vue kanban pour les alertes -->
+        <record id="view_it_alert_kanban" model="ir.ui.view">
+            <field name="name">it.alert.kanban</field>
+            <field name="model">it.alert</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state" class="o_kanban_small_column">
+                    <field name="reference"/>
+                    <field name="name"/>
+                    <field name="type_id"/>
+                    <field name="client_id"/>
+                    <field name="date"/>
+                    <field name="equipment_id"/>
+                    <field name="software_id"/>
+                    <field name="contract_id"/>
+                    <field name="user_id"/>
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click
+                                              #{record.state.raw_value == 'draft' ? 'oe_kanban_card_danger' : ''}
+                                              #{record.state.raw_value == 'in_progress' ? 'oe_kanban_card_warning' : ''}">
+                                <div class="oe_kanban_content">
+                                    <div>
+                                        <strong><field name="name"/></strong>
+                                    </div>
+                                    <div>
+                                        <field name="reference"/> - <field name="type_id"/>
+                                    </div>
+                                    <div>
+                                        <field name="client_id"/>
+                                    </div>
+                                    <div t-if="record.equipment_id.raw_value">
+                                        <field name="equipment_id"/>
+                                    </div>
+                                    <div t-if="record.software_id.raw_value">
+                                        <field name="software_id"/>
+                                    </div>
+                                    <div t-if="record.contract_id.raw_value">
+                                        <field name="contract_id"/>
+                                    </div>
+                                    <div>
+                                        Date: <field name="date"/>
+                                    </div>
+                                    <div>
+                                        <span t-if="record.user_id.raw_value">
+                                            <field name="user_id"/>
+                                        </span>
+                                        <span t-else="" class="text-muted">
+                                            Non assigné
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Vue de recherche pour les alertes -->
+        <record id="view_it_alert_search" model="ir.ui.view">
+            <field name="name">it.alert.search</field>
+            <field name="model">it.alert</field>
+            <field name="arch" type="xml">
+                <search string="Alertes">
+                    <field name="name"/>
+                    <field name="reference"/>
+                    <field name="client_id"/>
+                    <field name="type_id"/>
+                    <field name="equipment_id"/>
+                    <field name="software_id"/>
+                    <field name="contract_id"/>
+                    <field name="user_id"/>
+                    <separator/>
+                    <filter string="Mes alertes" name="my_alerts" domain="[('user_id', '=', uid)]"/>
+                    <separator/>
+                    <filter string="À traiter" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="En cours" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
+                    <filter string="Traitées" name="done" domain="[('state', '=', 'done')]"/>
+                    <separator/>
+                    <filter string="Alertes équipements" name="equipment_alerts" domain="[('equipment_id', '!=', False)]"/>
+                    <filter string="Alertes logiciels" name="software_alerts" domain="[('software_id', '!=', False)]"/>
+                    <filter string="Alertes contrats" name="contract_alerts" domain="[('contract_id', '!=', False)]"/>
+                    <separator/>
+                    <filter string="Alertes de ce mois" name="this_month" 
+                            domain="[('date', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d')),
+                                    ('date', '&lt;=', (context_today().replace(day=1) + relativedelta(months=1, days=-1)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Regrouper par">
+                        <filter string="Client" name="group_by_client" domain="[]" context="{'group_by': 'client_id'}"/>
+                        <filter string="Type" name="group_by_type" domain="[]" context="{'group_by': 'type_id'}"/>
+                        <filter string="État" name="group_by_state" domain="[]" context="{'group_by': 'state'}"/>
+                        <filter string="Assigné à" name="group_by_user" domain="[]" context="{'group_by': 'user_id'}"/>
+                        <filter string="Date" name="group_by_date" domain="[]" context="{'group_by': 'date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Vues pour les types d'alertes -->
+        <record id="view_it_alert_type_form" model="ir.ui.view">
+            <field name="name">it.alert.type.form</field>
+            <field name="model">it.alert.type</field>
+            <field name="arch" type="xml">
+                <form string="Type d'alerte">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_alerts" type="object" class="oe_stat_button" icon="fa-bell">
+                                <field name="alert_count" widget="statinfo" string="Alertes"/>
+                            </button>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="model"/>
+                                <field name="color" widget="color"/>
+                                <field name="active" widget="boolean_toggle"/>
+                            </group>
+                            <group>
+                                <field name="days_before"/>
+                                <field name="email_template_id" domain="[('model', '=', model)]"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description" name="description">
+                                <field name="description" placeholder="Description de ce type d'alerte..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_it_alert_type_tree" model="ir.ui.view">
+            <field name="name">it.alert.type.tree</field>
+            <field name="model">it.alert.type</field>
+            <field name="arch" type="xml">
+                <list string="Types d'alertes">
+                    <field name="name"/>
+                    <field name="model"/>
+                    <field name="days_before"/>
+                    <field name="alert_count"/>
+                    <field name="active"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Actions -->
+        <record id="action_it_alert" model="ir.actions.act_window">
+            <field name="name">Alertes</field>
+            <field name="res_model">it.alert</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="context">{'search_default_draft': 1, 'search_default_in_progress': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer une nouvelle alerte
+                </p>
+            </field>
+        </record>
+
+        <record id="action_it_alert_type" model="ir.actions.act_window">
+            <field name="name">Types d'alertes</field>
+            <field name="res_model">it.alert.type</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer un nouveau type d'alerte
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>
