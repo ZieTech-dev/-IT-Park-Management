@@ -22,6 +22,12 @@
                                 class="oe_highlight"
                                 invisible="state != 'draft'"/>
 
+                        <button name="action_submit_for_approval" 
+                                type="object" 
+                                string="Soumettre pour approbation" 
+                                invisible_if="state != 'draft'" 
+                                class="btn-primary"/>
+
                         <button name="action_set_to_renew" 
                                 type="object" 
                                 string="À renouveler" 

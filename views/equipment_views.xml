@@ -46,7 +46,7 @@
                             <group>
                                 <field name="client_id" required="1"/>
                                 <field name="site_id" domain="[('client_id', '=', client_id)]"/>
-                                <field name="user_id" domain="[('parent_id', '=', client_id.partner_id.id)]"/>
+                                <field name="user_id" domain="[('parent_id', '=', client_id and client_id.partner_id and client_id.partner_id.id or False)]"/>
                                 <field name="active" widget="boolean_toggle"/>
                             </group>
                             <group>

@@ -31,6 +31,7 @@
         'hr',
         'sale_subscription',  
         'helpdesk', 
+        'portal',
     ],
 
     'data': [
@@ -43,8 +44,10 @@
         'views/intervention_views.xml',
         'views/alert_views.xml',
         'views/menus.xml',
+        'views/portal_templates.xml',
         'data/ir_sequence_data.xml',
         'data/alert_cron.xml',
+        'data/mail_templates.xml',
     ],
     
     'demo': [

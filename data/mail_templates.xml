@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Template pour la demande d'approbation du contrat -->
+        <record id="email_template_contract_approval" model="mail.template">
+            <field name="name">Contrat IT: Demande d'approbation</field>
+            <field name="model_id" ref="model_it_contract"/>
+            <field name="subject">Nouveau contrat de service IT en attente de votre approbation</field>
+            <field name="email_from">${object.company_id.email or user.email_formatted|safe}</field>
+            <field name="email_to">${object.client_id.partner_id.email_formatted|safe}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Bonjour ${object.client_id.name},
+                        <br/><br/>
+                        Un nouveau contrat de service informatique a été créé pour vous et est en attente de votre approbation.
+                        <br/><br/>
+                        <strong>Référence:</strong> ${object.reference}<br/>
+                        <strong>Nom:</strong> ${object.name}<br/>
+                        <strong>Date de début:</strong> ${format_date(object.date_start)}<br/>
+                        <strong>Date de fin:</strong> ${format_date(object.date_end)}<br/>
+                        <strong>Montant:</strong> ${format_amount(object.price, object.currency_id)}<br/>
+                        <br/>
+                        Pour consulter les détails et approuver ce contrat, veuillez cliquer sur le lien suivant:
+                        <br/><br/>
+                        <a href="/my/it/contract/${object.id}" style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                            Voir le contrat
+                        </a>
+                        <br/><br/>
+                        Cordialement,<br/>
+                        L'équipe ${object.company_id.name}
+                    </p>
+                </div>
+            </field>
+            <field name="lang">fr_FR</field>
+            
+            <field name="auto_delete" eval="True"/>
+        </record>
+        
+        <!-- Template pour la confirmation d'acceptation du contrat -->
+        <record id="email_template_contract_accepted" model="mail.template">
+            <field name="name">Contrat IT: Accepté</field>
+            <field name="model_id" ref="model_it_contract"/>
+            <field name="subject">Contrat de service IT accepté</field>
+            <field name="email_from">${object.company_id.email or user.email_formatted|safe}</field>
+            <field name="email_to">${user.email_formatted|safe}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Bonjour,
+                        <br/><br/>
+                        Le contrat de service informatique suivant a été accepté par le client ${object.client_id.name}:
+                        <br/><br/>
+                        <strong>Référence:</strong> ${object.reference}<br/>
+                        <strong>Nom:</strong> ${object.name}<br/>
+                        <strong>Date de début:</strong> ${format_date(object.date_start)}<br/>
+                        <strong>Date de fin:</strong> ${format_date(object.date_end)}<br/>
+                        <strong>Montant:</strong> ${format_amount(object.price, object.currency_id)}<br/>
+                        <br/>
+                        Pour consulter les détails du contrat, veuillez cliquer sur le lien suivant:
+                        <br/><br/>
+                        <a href="/web#id=${object.id}&amp;model=it.contract&amp;view_type=form" style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                            Voir le contrat
+                        </a>
+                        <br/><br/>
+                        Cordialement,<br/>
+                        Le système
+                    </p>
+                </div>
+            </field>
+            <field name="lang">fr_FR</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

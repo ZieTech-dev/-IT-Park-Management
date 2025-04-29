@@ -73,6 +73,7 @@ class ITContract(models.Model):
     # État
     state = fields.Selection([
         ('draft', 'Brouillon'),
+        ('waiting_approval', 'En attente d\'acceptation'),
         ('active', 'Actif'),
         ('to_renew', 'À renouveler'),
         ('expired', 'Expiré'),
@@ -300,7 +301,111 @@ class ITContract(models.Model):
     #             _logger.error(f"Erreur lors du calcul de la prochaine date de facturation pour le contrat {record.id}: {e}")
     #             record.next_invoice_date = False
                 
+    
+    def action_submit_for_approval(self):
+        self.write({'state': 'waiting_approval'})
+        
+        template = self.env.ref('it_park_management.email_template_contract_approval')
+        
+        try:
+            # Méthode pour Odoo 18 - utiliser render et send
+            email_values = {
+                'subject': template._render_field('subject', [self.id])[self.id],
+                'body_html': template._render_field('body_html', [self.id])[self.id],
+                'email_to': template._render_field('email_to', [self.id])[self.id],
+                'email_from': template._render_field('email_from', [self.id])[self.id],
+            }
+            
+            # Vérifier que le rendu s'est bien passé
+            if '${object' in email_values.get('body_html', ''):
+                _logger.error("Le rendu du template a échoué, des variables sont restées non évaluées")
                 
+                # Alternative: créer un email avec des valeurs fixes
+                email_values = {
+                    'subject': f'Contrat {self.name} - Demande d\'approbation',
+                    'body_html': f'''
+                        <div style="margin: 0px; padding: 0px;">
+                            <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                                Bonjour {self.client_id.name or "Client"},
+                                <br/><br/>
+                                Un nouveau contrat de service informatique a été créé pour vous et est en attente de votre approbation.
+                                <br/><br/>
+                                <strong>Référence:</strong> {self.reference or "N/A"}<br/>
+                                <strong>Nom:</strong> {self.name or "N/A"}<br/>
+                                <strong>Date de début:</strong> {self.date_start or "N/A"}<br/>
+                                <strong>Date de fin:</strong> {self.date_end or "N/A"}<br/>
+                                <strong>Montant:</strong> {self.price or 0.0} {self.currency_id.name or "EUR"}<br/>
+                                <br/>
+                                Pour consulter les détails et approuver ce contrat, veuillez cliquer sur le lien suivant:
+                                <br/><br/>
+                                <a href="/my/it/contract/{self.id}" style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                                    Voir le contrat
+                                </a>
+                                <br/><br/>
+                                Cordialement,<br/>
+                                L'équipe {self.company_id.name or ""}
+                            </p>
+                        </div>
+                    ''',
+                    'email_to': self.client_id.partner_id.email if self.client_id and self.client_id.partner_id else "",
+                    'email_from': self.company_id.email or self.env.user.email_formatted,
+                }
+            
+            # Créer et envoyer l'email
+            mail = self.env['mail.mail'].sudo().create(email_values)
+            mail_sent = mail.send(raise_exception=False)
+            
+            # Journaliser le résultat
+            if mail_sent:
+                _logger.info(f"Email envoyé avec succès pour le contrat {self.name} (ID: {self.id})")
+                self.message_post(body="Email de demande d'approbation envoyé avec succès")
+            else:
+                _logger.error(f"Échec d'envoi d'email pour le contrat {self.name} (ID: {self.id})")
+                self.message_post(body="Échec d'envoi de l'email de demande d'approbation")
+        
+        except Exception as e:
+            _logger.error(f"Erreur lors de l'envoi de l'email: {e}")
+            # Approche de dernier recours - utiliser l'API message_post
+            partner_ids = []
+            if self.client_id and self.client_id.partner_id:
+                partner_ids.append(self.client_id.partner_id.id)
+            
+            self.message_post(
+                body=f'''
+                    <div style="margin: 0px; padding: 0px;">
+                        <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                            Bonjour {self.client_id.name or "Client"},
+                            <br/><br/>
+                            Un nouveau contrat de service informatique a été créé pour vous et est en attente de votre approbation.
+                            <br/><br/>
+                            <strong>Référence:</strong> {self.reference or "N/A"}<br/>
+                            <strong>Nom:</strong> {self.name or "N/A"}<br/>
+                            <strong>Date de début:</strong> {self.date_start or "N/A"}<br/>
+                            <strong>Date de fin:</strong> {self.date_end or "N/A"}<br/>
+                            <strong>Montant:</strong> {self.price or 0.0} {self.currency_id.name or "EUR"}<br/>
+                        </p>
+                    </div>
+                ''',
+                subject=f'Contrat {self.name} - Demande d\'approbation',
+                partner_ids=partner_ids,
+                email_layout_xmlid='mail.mail_notification_light',
+            )
+            
+            # Notification dans l'interface Odoo
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Erreur d\'envoi d\'email'),
+                    'message': _('Une erreur s\'est produite lors de l\'envoi de l\'email. Voir les logs pour plus de détails.'),
+                    'sticky': True,
+                    'type': 'danger',
+                }
+            }
+        
+        return True
+        
+        
 
     def read(self, fields=None, load='_classic_read'):
         contracts_data = []
