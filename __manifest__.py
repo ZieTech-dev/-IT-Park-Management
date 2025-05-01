@@ -32,10 +32,12 @@
         'sale_subscription',  
         'helpdesk', 
         'portal',
+        'web',
     ],
 
     'data': [
         'security/it_park_security.xml',
+        'security/portal_security.xml',
         'security/ir.model.access.csv',
         'views/client_views.xml',
         'views/equipment_views.xml',
@@ -45,9 +47,13 @@
         'views/alert_views.xml',
         'views/menus.xml',
         'views/portal_templates.xml',
+        'views/equipment_portal_templates.xml',
+        'views/portal_contract_templates.xml',
         'data/ir_sequence_data.xml',
         'data/alert_cron.xml',
         'data/mail_templates.xml',
+        'data/email_templates.xml',
+        'data/cron_data.xml',
     ],
     
     'demo': [

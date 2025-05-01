@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Record rule for contracts in portal -->
+        <record id="it_contract_portal_rule" model="ir.rule">
+            <field name="name">Contrats IT: accès portail</field>
+            <field name="model_id" ref="it_park_management.model_it_contract"/>
+            <field name="domain_force">[('client_id.partner_id.id', 'in', user.partner_id.commercial_partner_id.child_ids.ids + [user.partner_id.commercial_partner_id.id])]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        </record>
+        
+        <!-- Access rights for portal users -->
+        <record id="it_contract_portal_access" model="ir.model.access">
+            <field name="name">it.contract portal access</field>
+            <field name="model_id" ref="it_park_management.model_it_contract"/>
+            <field name="group_id" ref="base.group_portal"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+    </data>
+</odoo>

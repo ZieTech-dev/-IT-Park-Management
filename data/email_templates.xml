@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template d'email pour demande d'approbation de contrat -->
+    <record id="email_template_contract_approval" model="mail.template">
+        <field name="name">Contrat IT: Demande d'approbation</field>
+        <field name="model_id" ref="model_it_contract"/>
+        <field name="subject">{{ object.company_id.name or '' }}: Contrat {{ object.name }} en attente d'approbation</field>
+        <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="email_to">{{ object.client_id.partner_id.email_formatted }}</field>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Bonjour ${object.client_id.name or "Client"},
+        <br/><br/>
+        Un nouveau contrat de service informatique a été créé pour vous et est en attente de votre approbation.
+        <br/><br/>
+        <strong>Référence:</strong> ${object.reference or "N/A"}<br/>
+        <strong>Nom:</strong> ${object.name or "N/A"}<br/>
+        <strong>Date de début:</strong> ${object.date_start or "N/A"}<br/>
+        <strong>Date de fin:</strong> ${object.date_end or "N/A"}<br/>
+        <strong>Montant:</strong> ${object.price or 0.0} ${object.currency_id.name or "EUR"}<br/>
+        <br/>
+        Pour consulter les détails et approuver ce contrat, veuillez cliquer sur le lien suivant:
+        <br/><br/>
+        <a href="/my/it/contract/${object.id}" style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+            Voir le contrat
+        </a>
+        <br/><br/>
+        Cordialement,<br/>
+        L'équipe ${object.company_id.name or ""}
+    </p>
+</div>
+        </field>
+        <field name="lang">{{ object.client_id.partner_id.lang }}</field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <!-- Template d'email pour confirmation d'acceptation de contrat -->
+    <record id="email_template_contract_accepted" model="mail.template">
+        <field name="name">Contrat IT: Confirmation d'acceptation</field>
+        <field name="model_id" ref="model_it_contract"/>
+        <field name="subject">{{ object.company_id.name or '' }}: Contrat {{ object.name }} accepté</field>
+        <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="partner_to">{{ object.create_uid.partner_id.id }}</field>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Bonjour,
+        <br/><br/>
+        Le contrat <strong>${object.name}</strong> (réf: ${object.reference or "N/A"}) a été accepté par ${object.client_id.name or "le client"}.
+        <br/><br/>
+        <strong>Détails du contrat:</strong><br/>
+        - Client: ${object.client_id.name or "N/A"}<br/>
+        - Type: ${object.type_id.name or "N/A"}<br/>
+        - Date de début: ${object.date_start or "N/A"}<br/>
+        - Date de fin: ${object.date_end or "N/A"}<br/>
+        - Montant: ${object.price or 0.0} ${object.currency_id.name or "EUR"}<br/>
+        - Fréquence de facturation: 
+        % if object.invoicing_frequency == 'monthly':
+            Mensuelle
+        % elif object.invoicing_frequency == 'quarterly':
+            Trimestrielle
+        % elif object.invoicing_frequency == 'semi_annual':
+            Semestrielle
+        % elif object.invoicing_frequency == 'annual':
+            Annuelle
+        % elif object.invoicing_frequency == 'one_time':
+            Unique
+        % endif
+        <br/><br/>
+        Pour consulter ce contrat dans le système, cliquez sur le lien suivant:
+        <br/><br/>
+        <a href="/web#id=${object.id}&amp;model=it.contract&amp;view_type=form" style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+            Voir dans Odoo
+        </a>
+        <br/><br/>
+        Cordialement,<br/>
+        ${object.company_id.name or ""}
+    </p>
+</div>
+        </field>
+        <field name="lang">{{ object.create_uid.lang }}</field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <!-- Template d'email pour rappel d'expiration de contrat -->
+    <record id="email_template_contract_expiration_reminder" model="mail.template">
+        <field name="name">Contrat IT: Rappel d'expiration</field>
+        <field name="model_id" ref="model_it_contract"/>
+        <field name="subject">Rappel: Votre contrat {{ object.name }} expire bientôt</field>
+        <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="email_to">{{ object.client_id.partner_id.email_formatted }}</field>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Bonjour ${object.client_id.name or "Client"},
+        <br/><br/>
+        Nous vous informons que votre contrat de service informatique arrive bientôt à expiration.
+        <br/><br/>
+        <strong>Référence:</strong> ${object.reference or "N/A"}<br/>
+        <strong>Nom:</strong> ${object.name or "N/A"}<br/>
+        <strong>Date d'expiration:</strong> ${object.date_end or "N/A"}<br/>
+        <strong>Jours restants:</strong> ${object.days_to_expiration or 0} jours<br/>
+        <br/>
+        Pour consulter les détails de ce contrat et discuter de son renouvellement, veuillez cliquer sur le lien suivant:
+        <br/><br/>
+        <a href="/my/it/contract/${object.id}" style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+            Voir le contrat
+        </a>
+        <br/><br/>
+        N'hésitez pas à nous contacter pour discuter des options de renouvellement.
+        <br/><br/>
+        Cordialement,<br/>
+        L'équipe ${object.company_id.name or ""}
+    </p>
+</div>
+        </field>
+        <field name="lang">{{ object.client_id.partner_id.lang }}</field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <!-- Template d'email pour notification de facturation -->
+    <record id="email_template_contract_invoice_notification" model="mail.template">
+        <field name="name">Contrat IT: Notification de facturation</field>
+        <field name="model_id" ref="model_it_contract"/>
+        <field name="subject">{{ object.company_id.name or '' }}: Facturation pour le contrat {{ object.name }}</field>
+        <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="email_to">{{ object.client_id.partner_id.email_formatted }}</field>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Bonjour ${object.client_id.name or "Client"},
+        <br/><br/>
+        Nous vous informons qu'une nouvelle facture a été générée pour votre contrat de service informatique.
+        <br/><br/>
+        <strong>Référence contrat:</strong> ${object.reference or "N/A"}<br/>
+        <strong>Nom du contrat:</strong> ${object.name or "N/A"}<br/>
+        <strong>Période de facturation:</strong> ${object.next_invoice_date or "N/A"}<br/>
+        <strong>Montant:</strong> ${object.recurring_amount or object.price or 0.0} ${object.currency_id.name or "EUR"}<br/>
+        <br/>
+        Pour consulter cette facture, veuillez vous connecter à votre espace client:
+        <br/><br/>
+        <a href="/my/invoices" style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+            Voir les factures
+        </a>
+        <br/><br/>
+        Cordialement,<br/>
+        L'équipe ${object.company_id.name or ""}
+    </p>
+</div>
+        </field>
+        <field name="lang">{{ object.client_id.partner_id.lang }}</field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+</odoo>

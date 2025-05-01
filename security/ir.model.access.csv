@@ -42,3 +42,7 @@ access_it_alert_user,it.alert.user,model_it_alert,it_park_management.group_it_pa
 access_it_alert_technician,it.alert.technician,model_it_alert,it_park_management.group_it_park_technician,1,1,1,0
 access_it_alert_manager,it.alert.manager,model_it_alert,it_park_management.group_it_park_manager,1,1,1,1
 access_it_alert_generator_manager,it.alert.generator.manager,model_it_alert_generator,it_park_management.group_it_park_manager,1,1,1,1
+
+access_it_contract_portal,it.contract.portal,it_park_management.model_it_contract,base.group_portal,1,0,0,0
+access_it_client_portal,it.client.portal,it_park_management.model_it_client,base.group_portal,1,0,0,0
+access_it_contract_type_portal,it.contract.type.portal,it_park_management.model_it_contract_type,base.group_portal,1,0,0,0

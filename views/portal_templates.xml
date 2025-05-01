@@ -1,41 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Page d'accueil du portail IT -->
-    <template id="portal_my_it_home" name="IT Services Portal">
-        <t t-call="portal.portal_layout">
-            <div class="o_portal_docs">
-                <h1 class="mt-4">Gestion de parc informatique</h1>
-                <div class="row mt32 o_portal_search_panel">
-                    <div class="col-lg-4">
-                        <a href="/my/it/contracts">
-                            <div class="card mb-4">
-                                <div class="card-body text-center">
-                                    <h3 class="card-title">
-                                        <span t-esc="contract_count" t-options="{'widget': 'statinfo'}"/>
-                                    </h3>
-                                    <p class="card-text">Contrats</p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-lg-4">
-                        <a href="/my/it/equipment">
-                            <div class="card mb-4">
-                                <div class="card-body text-center">
-                                    <h3 class="card-title">
-                                        <span t-esc="equipment_count" t-options="{'widget': 'statinfo'}"/>
-                                    </h3>
-                                    <p class="card-text">Équipements</p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </t>
-    </template>
-
-    <!-- Liste des contrats -->
+    <!-- Template for contract list in portal -->
     <template id="portal_my_contracts" name="My Contracts">
         <t t-call="portal.portal_layout">
             <t t-set="breadcrumbs_searchbar" t-value="True"/>
@@ -44,114 +9,232 @@
                 <t t-set="title">Contrats</t>
             </t>
             
-            <t t-if="contracts">
-                <table class="table table-striped table-hover o_portal_my_doc_table">
-                    <thead>
-                        <tr class="active">
-                            <th>Référence</th>
-                            <th>Nom</th>
-                            <th>Date de début</th>
-                            <th>Date de fin</th>
-                            <th>État</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <t t-foreach="contracts" t-as="contract">
-                            <tr>
-                                <td>
-                                    <a t-attf-href="/my/it/contract/#{contract.id}">
-                                        <t t-esc="contract.reference"/>
-                                    </a>
-                                </td>
-                                <td><t t-esc="contract.name"/></td>
-                                <td><t t-esc="contract.date_start" t-options='{"widget": "date"}'/></td>
-                                <td><t t-esc="contract.date_end" t-options='{"widget": "date"}'/></td>
-                                <td>
-                                    <t t-if="contract.state == 'waiting_approval'">
-                                        <span class="badge badge-warning">En attente d'acceptation</span>
-                                    </t>
-                                    <t t-elif="contract.state == 'active'">
-                                        <span class="badge badge-success">Actif</span>
-                                    </t>
-                                    <t t-elif="contract.state == 'to_renew'">
-                                        <span class="badge badge-info">À renouveler</span>
-                                    </t>
-                                    <t t-else="">
-                                        <span class="badge badge-secondary" t-esc="contract.state"/>
-                                    </t>
-                                </td>
-                            </tr>
-                        </t>
-                    </tbody>
-                </table>
-                <div t-if="pager" class="o_portal_pager text-center">
-                    <t t-call="portal.pager"/>
+            <t t-if="not contracts">
+                <div class="alert alert-warning mt8" role="alert">
+                    Aucun contrat trouvé.
                 </div>
             </t>
-            <t t-else="">
-                <div class="alert alert-info">
-                    <p>Il n'y a pas de contrats à afficher.</p>
-                </div>
+            
+            <t t-if="contracts" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Référence</th>
+                        <th>Nom</th>
+                        <th>Date de début</th>
+                        <th>Date de fin</th>
+                        <th>État</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="contracts" t-as="contract">
+                        <tr>
+                            <td>
+                                <a t-attf-href="/my/it/contract/#{contract.id}">
+                                    <t t-esc="contract.reference or ''"/>
+                                </a>
+                            </td>
+                            <td><t t-esc="contract.name"/></td>
+                            <td><t t-esc="contract.date_start" t-options="{'widget': 'date'}"/></td>
+                            <td><t t-esc="contract.date_end" t-options="{'widget': 'date'}"/></td>
+                            <td>
+                                <t t-if="contract.state == 'draft'">
+                                    <span class="badge badge-pill badge-secondary">Brouillon</span>
+                                </t>
+                                <t t-elif="contract.state == 'waiting_approval'">
+                                    <span class="badge badge-pill badge-warning">En attente d'approbation</span>
+                                </t>
+                                <t t-elif="contract.state == 'active'">
+                                    <span class="badge badge-pill badge-success">Actif</span>
+                                </t>
+                                <t t-elif="contract.state == 'to_renew'">
+                                    <span class="badge badge-pill badge-info">À renouveler</span>
+                                </t>
+                                <t t-elif="contract.state == 'expired'">
+                                    <span class="badge badge-pill badge-danger">Expiré</span>
+                                </t>
+                                <t t-elif="contract.state == 'cancelled'">
+                                    <span class="badge badge-pill badge-dark">Annulé</span>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
             </t>
         </t>
     </template>
 
-    <!-- Détail d'un contrat -->
-    <template id="portal_my_contract_detail" name="Contract Details">
+    <!-- Template for contract details in portal -->
+    <template id="portal_contract_detail" name="Contract Details">
         <t t-call="portal.portal_layout">
-            <t t-set="o_portal_fullwidth_alert" groups="sale.group_warning_sale">
-                <t t-if="contract.state == 'waiting_approval'">
-                    <div class="alert alert-warning" role="alert">
-                        <p>Ce contrat est en attente de votre acceptation.</p>
-                        <a t-att-href="'/my/it/contract/%s/accept' % contract.id" class="btn btn-primary">
-                            <i class="fa fa-check"/> Accepter ce contrat
-                        </a>
-                    </div>
-                </t>
-            </t>
-
-            <div id="optional_placeholder"></div>
-            <div class="container">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <h3>
-                                    <span t-esc="contract.name"/>
-                                </h3>
+            <t t-set="o" t-value="contract"/>
+            
+            <div class="container mt-4">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h1 class="mb-0">Contrat <t t-esc="o.name"/></h1>
+                            <t t-if="o.state == 'waiting_approval'">
+                                <a t-attf-href="/my/it/contract/approve/#{o.id}" class="btn btn-primary">
+                                    Approuver ce contrat
+                                </a>
+                            </t>
+                        </div>
+                        
+                        <!-- Notification d'approbation si le contrat vient d'être approuvé -->
+                        <t t-if="request.params.get('approved')">
+                            <div class="alert alert-success" role="alert">
+                                Le contrat a été approuvé avec succès.
                             </div>
-                            <div class="col-lg-6 text-right">
-                                <span t-field="contract.reference" class="font-weight-bold"/>
+                        </t>
+                        
+                        <!-- Informations principales -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h3 class="card-title">Informations principales</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Référence:</strong> <span t-field="o.reference"/>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Client:</strong> <span t-field="o.client_id.name"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Type de contrat:</strong> <span t-field="o.type_id.name"/>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>État:</strong>
+                                        <t t-if="o.state == 'draft'">
+                                            <span class="badge badge-pill badge-secondary">Brouillon</span>
+                                        </t>
+                                        <t t-elif="o.state == 'waiting_approval'">
+                                            <span class="badge badge-pill badge-warning">En attente d'approbation</span>
+                                        </t>
+                                        <t t-elif="o.state == 'active'">
+                                            <span class="badge badge-pill badge-success">Actif</span>
+                                        </t>
+                                        <t t-elif="o.state == 'to_renew'">
+                                            <span class="badge badge-pill badge-info">À renouveler</span>
+                                        </t>
+                                        <t t-elif="o.state == 'expired'">
+                                            <span class="badge badge-pill badge-danger">Expiré</span>
+                                        </t>
+                                        <t t-elif="o.state == 'cancelled'">
+                                            <span class="badge badge-pill badge-dark">Annulé</span>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Date de début:</strong> <span t-field="o.date_start"/>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Date de fin:</strong> <span t-field="o.date_end"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Montant:</strong> <span t-field="o.price" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Fréquence de facturation:</strong>
+                                        <t t-if="o.invoicing_frequency == 'monthly'">Mensuelle</t>
+                                        <t t-elif="o.invoicing_frequency == 'quarterly'">Trimestrielle</t>
+                                        <t t-elif="o.invoicing_frequency == 'semi_annual'">Semestrielle</t>
+                                        <t t-elif="o.invoicing_frequency == 'annual'">Annuelle</t>
+                                        <t t-elif="o.invoicing_frequency == 'one_time'">Unique</t>
+                                    </div>
+                                </div>
+                                <div class="row" t-if="o.next_invoice_date">
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Prochaine facturation:</strong> <span t-field="o.next_invoice_date"/>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-4">
-                            <div class="col-6">
-                                <strong>Date de début:</strong> <span t-field="contract.date_start" t-options='{"widget": "date"}'/>
+                        
+                        <!-- Description du contrat -->
+                        <div class="card mb-4" t-if="o.description">
+                            <div class="card-header">
+                                <h3 class="card-title">Description</h3>
                             </div>
-                            <div class="col-6">
-                                <strong>Date de fin:</strong> <span t-field="contract.date_end" t-options='{"widget": "date"}'/>
-                            </div>
-                        </div>
-                        <div class="row mb-4">
-                            <div class="col-6">
-                                <strong>Type de contrat:</strong> <span t-field="contract.type_id.name"/>
-                            </div>
-                            <div class="col-6">
-                                <strong>Montant:</strong> <span t-field="contract.price" t-options='{"widget": "monetary", "display_currency": contract.currency_id}'/>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p t-field="o.description"/>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <strong>Description:</strong>
-                                <div class="mt-2" t-field="contract.description"/>
+                        
+                        <!-- Termes et conditions -->
+                        <div class="card mb-4" t-if="o.terms">
+                            <div class="card-header">
+                                <h3 class="card-title">Termes et conditions</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div t-field="o.terms"/>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <strong>Termes et conditions:</strong>
-                                <div class="mt-2" t-field="contract.terms"/>
+                        
+                        <!-- Liste des équipements -->
+                        <div class="card mb-4" t-if="o.equipment_ids">
+                            <div class="card-header">
+                                <h3 class="card-title">Équipements couverts</h3>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Type</th>
+                                            <th>État</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="o.equipment_ids" t-as="equipment">
+                                            <tr>
+                                                <td><t t-esc="equipment.name"/></td>
+                                                <td><t t-esc="equipment.type_id.name if equipment.type_id else ''"/></td>
+                                                <td><t t-esc="equipment.state"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Liste des logiciels -->
+                        <div class="card mb-4" t-if="o.software_ids">
+                            <div class="card-header">
+                                <h3 class="card-title">Logiciels couverts</h3>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Version</th>
+                                            <th>Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="o.software_ids" t-as="software">
+                                            <tr>
+                                                <td><t t-esc="software.name"/></td>
+                                                <td><t t-esc="software.version"/></td>
+                                                <td><t t-esc="software.type_id.name if software.type_id else ''"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -159,4 +242,41 @@
             </div>
         </t>
     </template>
+
+    <!-- Email template pour approbation -->
+    <record id="email_template_contract_approval_portal" model="mail.template">
+        <field name="name">Contrat: Demande d'approbation (Portal)</field>
+        <field name="model_id" ref="it_park_management.model_it_contract"/>
+        <field name="subject">{{ object.name }} - Demande d'approbation</field>
+        <field name="email_from">{{ user.email_formatted }}</field>
+        <field name="email_to">{{ object.client_id.contact_email or '' }}</field>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Bonjour {{ object.client_id.name or 'Client' }},
+        <br/><br/>
+        Un nouveau contrat de service informatique a été créé pour vous et est en attente de votre approbation.
+        <br/><br/>
+        <strong>Référence:</strong> {{ object.reference or 'N/A' }}<br/>
+        <strong>Nom:</strong> {{ object.name or 'N/A' }}<br/>
+        <strong>Date de début:</strong> {{ format_date(object.date_start) or 'N/A' }}<br/>
+        <strong>Date de fin:</strong> {{ format_date(object.date_end) or 'N/A' }}<br/>
+        <strong>Montant:</strong> {{ format_amount(object.price, object.currency_id) or '0.00' }}<br/>
+        <br/>
+        Pour plus de détails et approuver ce contrat, veuillez vous connecter à votre espace client en cliquant sur le lien ci-dessous:
+        <div style="margin: 16px 0px 16px 0px;">
+            <a t-att-href="'%s/my/it/contract/%s' % (ctx.get('base_url'), object.id)"
+               style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                Voir le contrat
+            </a>
+        </div>
+        <br/>
+        Cordialement,<br/>
+        L'équipe {{ user.company_id.name }}
+    </p>
+</div>
+        </field>
+        <field name="lang">{{ object.client_id.partner_id.lang }}</field>
+        <field name="auto_delete" eval="True"/>
+    </record>
 </odoo>

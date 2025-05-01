@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Liste des équipements -->
+    <template id="portal_my_equipment" name="My IT Equipment">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Équipements</t>
+            </t>
+            
+            <t t-if="not equipment">
+                <div class="alert alert-info mt-4">
+                    <p>Vous n'avez pas d'équipements attribués.</p>
+                </div>
+            </t>
+            <t t-else="">
+                <t t-call="portal.portal_table">
+                    <thead>
+                        <tr class="active">
+                            <th>Nom</th>
+                            <th>Type</th>
+                            <th>Numéro de série</th>
+                            <th>État</th>
+                            <th>Date d'acquisition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="equipment" t-as="item">
+                            <tr>
+                                <td>
+                                    <a t-attf-href="/my/it/equipment/#{item.id}" t-esc="item.name"/>
+                                </td>
+                                <td t-esc="item.type_id.name" />
+                                <td t-esc="item.serial_number" />
+                                <td>
+                                    <t t-if="item.state == 'operational'">
+                                        <span class="badge bg-success">Opérationnel</span>
+                                    </t>
+                                    <t t-elif="item.state == 'maintenance'">
+                                        <span class="badge bg-warning">En maintenance</span>
+                                    </t>
+                                    <t t-elif="item.state == 'out_of_order'">
+                                        <span class="badge bg-danger">Hors service</span>
+                                    </t>
+                                    <t t-elif="item.state == 'stock'">
+                                        <span class="badge bg-info">En stock</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="badge bg-secondary" t-esc="item.state"/>
+                                    </t>
+                                </td>
+                                <td>
+                                    <span t-field="item.acquisition_date" t-options="{'widget': 'date'}"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </t>
+            </t>
+            <div class="o_portal_pager mt-4">
+                <t t-call="portal.pager"/>
+            </div>
+        </t>
+    </template>
+
+    <!-- Détail d'un équipement -->
+    <template id="portal_my_equipment_detail" name="Equipment Details">
+        <t t-call="portal.portal_layout">
+            <t t-set="o_portal_fullwidth_alert" groups="purchase.group_purchase_manager">
+                <t t-call="portal.portal_back_in_edit_mode">
+                    <t t-set="backend_url" t-value="'/web#model=it.equipment&amp;id=%s&amp;view_type=form' % (equipment.id)"/>
+                </t>
+            </t>
+
+            <div class="row mt-4">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0">
+                                <span t-field="equipment.name"/>
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <strong>Type d'équipement:</strong> 
+                                    <span t-field="equipment.type_id.name"/>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Numéro de série:</strong> 
+                                    <span t-field="equipment.serial_number"/>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <strong>Date d'acquisition:</strong> 
+                                    <span t-field="equipment.acquisition_date" t-options="{'widget': 'date'}"/>
+                                </div>
+                                <div class="col-6">
+                                    <strong>État:</strong>
+                                    <div class="mt-2">
+                                        <t t-if="equipment.state == 'operational'">
+                                            <span class="badge bg-success p-2">Opérationnel</span>
+                                        </t>
+                                        <t t-elif="equipment.state == 'maintenance'">
+                                            <span class="badge bg-warning p-2">En maintenance</span>
+                                        </t>
+                                        <t t-elif="equipment.state == 'out_of_order'">
+                                            <span class="badge bg-danger p-2">Hors service</span>
+                                        </t>
+                                        <t t-elif="equipment.state == 'stock'">
+                                            <span class="badge bg-info p-2">En stock</span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="badge bg-secondary p-2" t-esc="equipment.state"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <t t-if="equipment.warranty_end_date">
+                                <div class="row mb-4">
+                                    <div class="col-6">
+                                        <strong>Date de fin de garantie:</strong> 
+                                        <span t-field="equipment.warranty_end_date" t-options="{'widget': 'date'}"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <t t-if="equipment.warranty_end_date > datetime.date.today()">
+                                            <span class="badge bg-success">Sous garantie</span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="badge bg-danger">Garantie expirée</span>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+                            
+                            <t t-if="equipment.description">
+                                <h5 class="mt-4 mb-3">Description</h5>
+                                <div t-field="equipment.description"/>
+                            </t>
+                            
+                            <t t-if="equipment.technical_specs">
+                                <h5 class="mt-4 mb-3">Spécifications techniques</h5>
+                                <div t-field="equipment.technical_specs"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Contrats liés -->
+                    <t t-if="equipment.contract_ids">
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h4 class="mb-0">Contrats associés</h4>
+                            </div>
+                            <div class="card-body">
+                                <t t-foreach="equipment.contract_ids" t-as="contract">
+                                    <div class="mb-3">
+                                        <a t-attf-href="/my/it/contract/#{contract.id}" class="text-info">
+                                            <span t-field="contract.name"/>
+                                        </a>
+                                        <br/>
+                                        <small class="text-muted">
+                                            <span t-field="contract.date_start" t-options="{'widget': 'date'}"/> - 
+                                            <span t-field="contract.date_end" t-options="{'widget': 'date'}"/>
+                                        </small>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                    
+                    <!-- Maintenance -->
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            <h4 class="mb-0">Maintenance</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <a href="/my/it/tickets/create" class="btn btn-primary btn-block">
+                                    <i class="fa fa-plus-circle mr-1"/> Signaler un problème
+                                </a>
+                            </div>
+                            <div class="mb-3">
+                                <h5>Dernier entretien</h5>
+                                <t t-if="equipment.last_maintenance_date">
+                                    <span t-field="equipment.last_maintenance_date" t-options="{'widget': 'date'}"/>
+                                </t>
+                                <t t-else="">
+                                    <span class="text-muted">Aucun entretien enregistré</span>
+                                </t>
+                            </div>
+                            <div>
+                                <h5>Prochain entretien prévu</h5>
+                                <t t-if="equipment.next_maintenance_date">
+                                    <span t-field="equipment.next_maintenance_date" t-options="{'widget': 'date'}"/>
+                                </t>
+                                <t t-else="">
+                                    <span class="text-muted">Aucun entretien planifié</span>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

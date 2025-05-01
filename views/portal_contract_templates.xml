@@ -1,0 +1,244 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Liste des contrats -->
+    <template id="portal_my_contracts" name="My IT Contracts">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Contrats IT</t>
+            </t>
+            
+            <t t-if="not contracts">
+                <div class="alert alert-info text-center" role="alert">
+                    <p>Aucun contrat trouvé.</p>
+                </div>
+            </t>
+            
+            <div t-if="contracts" class="container mt-4">
+                <div class="row mt-4">
+                    <!-- Table des contrats -->
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table table-hover o_portal_my_doc_table">
+                                <thead>
+                                    <tr class="active">
+                                        <th>Référence</th>
+                                        <th>Nom</th>
+                                        <th>Type</th>
+                                        <th>Date début</th>
+                                        <th>Date fin</th>
+                                        <th>Montant</th>
+                                        <th>État</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="contracts" t-as="contract">
+                                        <tr>
+                                            <td>
+                                                <a t-att-href="'/my/it/contract/%s' % contract.id" t-esc="contract.reference"/>
+                                            </td>
+                                            <td>
+                                                <a t-att-href="'/my/it/contract/%s' % contract.id" t-esc="contract.name"/>
+                                            </td>
+                                            <td t-esc="contract.type_id.name"/>
+                                            <td t-esc="contract.date_start" t-options="{'widget': 'date'}"/>
+                                            <td t-esc="contract.date_end" t-options="{'widget': 'date'}"/>
+                                            <td>
+                                                <span t-field="contract.price" t-options="{'widget': 'monetary', 'display_currency': contract.currency_id}"/>
+                                            </td>
+                                            <td>
+                                                <t t-if="contract.state == 'draft'">
+                                                    <span class="badge bg-secondary">Brouillon</span>
+                                                </t>
+                                                <t t-elif="contract.state == 'waiting_approval'">
+                                                    <span class="badge bg-warning">En attente d'approbation</span>
+                                                </t>
+                                                <t t-elif="contract.state == 'active'">
+                                                    <span class="badge bg-success">Actif</span>
+                                                </t>
+                                                <t t-elif="contract.state == 'to_renew'">
+                                                    <span class="badge bg-info">À renouveler</span>
+                                                </t>
+                                                <t t-elif="contract.state == 'expired'">
+                                                    <span class="badge bg-danger">Expiré</span>
+                                                </t>
+                                                <t t-elif="contract.state == 'cancelled'">
+                                                    <span class="badge bg-dark">Annulé</span>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="col-12">
+                        <t t-call="portal.pager"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    
+    <!-- Détail d'un contrat -->
+    <template id="portal_contract_detail" name="Contract Details">
+        <t t-call="portal.portal_layout">
+            <!-- Notification en cas d'approbation réussie -->
+            <t t-if="request.params.get('approved')">
+                <div class="alert alert-success alert-dismissible fade show" role="status">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <i class="fa fa-check me-2"></i> Le contrat a été approuvé avec succès.
+                </div>
+            </t>
+            
+            <div class="container mt-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <div class="row">
+                            <div class="col-6">
+                                <h3><t t-esc="contract.name"/></h3>
+                                <p class="text-white"><t t-esc="contract.reference"/></p>
+                            </div>
+                            <div class="col-6 text-end">
+                                <!-- Bouton d'approbation si en attente -->
+                                <t t-if="contract.state == 'waiting_approval'">
+                                    <!-- Utilisation d'une modal pour confirmation -->
+                                    <button type="button" class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#approvalModal">
+                                        <i class="fa fa-check me-1"/> Approuver ce contrat
+                                    </button>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Informations générales -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h4>Informations générales</h4>
+                                <hr/>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="row mb-2">
+                                    <div class="col-5"><strong>Client:</strong></div>
+                                    <div class="col-7"><t t-esc="contract.client_id.name"/></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5"><strong>Type de contrat:</strong></div>
+                                    <div class="col-7"><t t-esc="contract.type_id.name"/></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5"><strong>Date de début:</strong></div>
+                                    <div class="col-7"><t t-esc="contract.date_start" t-options="{'widget': 'date'}"/></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5"><strong>Date de fin:</strong></div>
+                                    <div class="col-7"><t t-esc="contract.date_end" t-options="{'widget': 'date'}"/></div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="row mb-2">
+                                    <div class="col-5"><strong>État:</strong></div>
+                                    <div class="col-7">
+                                        <t t-if="contract.state == 'draft'">
+                                            <span class="badge bg-secondary">Brouillon</span>
+                                        </t>
+                                        <t t-elif="contract.state == 'waiting_approval'">
+                                            <span class="badge bg-warning">En attente d'approbation</span>
+                                        </t>
+                                        <t t-elif="contract.state == 'active'">
+                                            <span class="badge bg-success">Actif</span>
+                                        </t>
+                                        <t t-elif="contract.state == 'to_renew'">
+                                            <span class="badge bg-info">À renouveler</span>
+                                        </t>
+                                        <t t-elif="contract.state == 'expired'">
+                                            <span class="badge bg-danger">Expiré</span>
+                                        </t>
+                                        <t t-elif="contract.state == 'cancelled'">
+                                            <span class="badge bg-dark">Annulé</span>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5"><strong>Fréquence de facturation:</strong></div>
+                                    <div class="col-7">
+                                        <t t-if="contract.invoicing_frequency == 'monthly'">Mensuelle</t>
+                                        <t t-elif="contract.invoicing_frequency == 'quarterly'">Trimestrielle</t>
+                                        <t t-elif="contract.invoicing_frequency == 'semi_annual'">Semestrielle</t>
+                                        <t t-elif="contract.invoicing_frequency == 'annual'">Annuelle</t>
+                                        <t t-elif="contract.invoicing_frequency == 'one_time'">Unique</t>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5"><strong>Prochaine facturation:</strong></div>
+                                    <div class="col-7"><t t-esc="contract.next_invoice_date" t-options="{'widget': 'date'}"/></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-5"><strong>Montant du contrat:</strong></div>
+                                    <div class="col-7">
+                                        <span t-field="contract.price" t-options="{'widget': 'monetary', 'display_currency': contract.currency_id}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Description du contrat -->
+                        <div class="row mb-4" t-if="contract.description">
+                            <div class="col-12">
+                                <h4>Description du contrat</h4>
+                                <hr/>
+                            </div>
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <t t-esc="contract.description"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Termes et conditions -->
+                        <div class="row mb-4" t-if="contract.terms">
+                            <div class="col-12">
+                                <h4>Termes et conditions</h4>
+                                <hr/>
+                            </div>
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <t t-raw="contract.terms"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal de confirmation d'approbation -->
+            <div t-if="contract.state == 'waiting_approval'" class="modal fade" id="approvalModal" tabindex="-1" aria-labelledby="approvalModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="approvalModalLabel">Confirmation d'approbation</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Êtes-vous sûr de vouloir approuver le contrat "<t t-esc="contract.name"/>"?</p>
+                            <p>Cette action est irréversible.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <a t-att-href="'/my/it/contract/approve/%s' % contract.id" class="btn btn-success">
+                                Confirmer l'approbation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
