@@ -225,33 +225,74 @@ class ITContract(models.Model):
     
             
             
-                    
+    
     def action_submit_for_approval(self):
         self.write({'state': 'waiting_approval'})
         
-        # Vérifier si le template du portail existe, sinon utiliser le template original
-        portal_template = self.env.ref('it_park_management.email_template_contract_approval_portal', False)
-        template = portal_template or self.env.ref('it_park_management.email_template_contract_approval')
+        template = self.env.ref('it_park_management.email_template_contract_approval')
         
         try:
-            # Ajouter l'URL de base pour le template
-            base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-            ctx = {'base_url': base_url}
+            # Méthode pour Odoo 18 - utiliser render et send
+            email_values = {
+                'subject': template._render_field('subject', [self.id])[self.id],
+                'body_html': template._render_field('body_html', [self.id])[self.id],
+                'email_to': template._render_field('email_to', [self.id])[self.id],
+                'email_from': template._render_field('email_from', [self.id])[self.id],
+            }
             
-            # Envoyer l'email avec le contexte
-            template.with_context(ctx).send_mail(self.id, force_send=True)
-            self.message_post(body="Email de demande d'approbation envoyé avec succès")
+            # Vérifier que le rendu s'est bien passé
+            if '${object' in email_values.get('body_html', ''):
+                _logger.error("Le rendu du template a échoué, des variables sont restées non évaluées")
+                
+                # Alternative: créer un email avec des valeurs fixes
+                email_values = {
+                    'subject': f'Contrat {self.name} - Demande d\'approbation',
+                    'body_html': f'''
+                        <div style="margin: 0px; padding: 0px;">
+                            <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                                Bonjour {self.client_id.name or "Client"},
+                                <br/><br/>
+                                Un nouveau contrat de service informatique a été créé pour vous et est en attente de votre approbation.
+                                <br/><br/>
+                                <strong>Référence:</strong> {self.reference or "N/A"}<br/>
+                                <strong>Nom:</strong> {self.name or "N/A"}<br/>
+                                <strong>Date de début:</strong> {self.date_start or "N/A"}<br/>
+                                <strong>Date de fin:</strong> {self.date_end or "N/A"}<br/>
+                                <strong>Montant:</strong> {self.price or 0.0} {self.currency_id.name or "EUR"}<br/>
+                                <br/>
+                                Pour consulter les détails et approuver ce contrat, veuillez cliquer sur le lien suivant:
+                                <br/><br/>
+                                <a href="/my/it/contract/{self.id}" style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                                    Voir le contrat
+                                </a>
+                                <br/><br/>
+                                Cordialement,<br/>
+                                L'équipe {self.company_id.name or ""}
+                            </p>
+                        </div>
+                    ''',
+                    'email_to': self.client_id.partner_id.email if self.client_id and self.client_id.partner_id else "",
+                    'email_from': self.company_id.email or self.env.user.email_formatted,
+                }
             
+            # Créer et envoyer l'email
+            mail = self.env['mail.mail'].sudo().create(email_values)
+            mail_sent = mail.send(raise_exception=False)
+            
+            # Journaliser le résultat
+            if mail_sent:
+                _logger.info(f"Email envoyé avec succès pour le contrat {self.name} (ID: {self.id})")
+                self.message_post(body="Email de demande d'approbation envoyé avec succès")
+            else:
+                _logger.error(f"Échec d'envoi d'email pour le contrat {self.name} (ID: {self.id})")
+                self.message_post(body="Échec d'envoi de l'email de demande d'approbation")
+        
         except Exception as e:
             _logger.error(f"Erreur lors de l'envoi de l'email: {e}")
             # Approche de dernier recours - utiliser l'API message_post
             partner_ids = []
             if self.client_id and self.client_id.partner_id:
                 partner_ids.append(self.client_id.partner_id.id)
-            
-            # Construire l'URL du portail
-            portal_url = f"{base_url}/my/it/contract/{self.id}" if base_url else ""
-            portal_link = f'<a href="{portal_url}" class="btn btn-primary">Voir le contrat</a>' if portal_url else ""
             
             self.message_post(
                 body=f'''
@@ -266,8 +307,6 @@ class ITContract(models.Model):
                             <strong>Date de début:</strong> {self.date_start or "N/A"}<br/>
                             <strong>Date de fin:</strong> {self.date_end or "N/A"}<br/>
                             <strong>Montant:</strong> {self.price or 0.0} {self.currency_id.name or "EUR"}<br/>
-                            <br/>
-                            {portal_link}
                         </p>
                     </div>
                 ''',
@@ -289,8 +328,7 @@ class ITContract(models.Model):
             }
         
         return True
-
-
+        
 
     def read(self, fields=None, load='_classic_read'):
         contracts_data = []

@@ -33,6 +33,8 @@
         'helpdesk', 
         'portal',
         'web',
+        'contacts',
+        'crm',
     ],
 
     'data': [
@@ -58,11 +60,13 @@
     
     'demo': [
         'demo/demo_data.xml',
+        'demo/demo_data.py',
     ],
     
     'installable': True,
     'application': True,
     'auto_install': False,
+    'post_init_hook': 'load_demo_data',
     'license': 'LGPL-3',
     
 }
